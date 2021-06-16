@@ -2,7 +2,9 @@
 
 **Contributors**  : 
 1. M. Ridwan Zalbina
-2. Firly
+3. M. Qurhanul Rizqie
+4. Pacu Putra
+5. Firly
 
 
 > $ npm install
