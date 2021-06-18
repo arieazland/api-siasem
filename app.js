@@ -27,7 +27,7 @@ app.use(Express.urlencoded({ extended: false }));
 app.use(Express.json());
 
 /** define router */
-// app.use('/', require('./routes/pages'));
+app.use('/', require('./routes/pages'));
 // app.use('/auth', require('./routes/auth'));
 // app.use('/konsul', require('./routes/konsul'));
 // app.use('/partisipant', require('./routes/partisipant'));
