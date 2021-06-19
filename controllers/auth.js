@@ -96,7 +96,9 @@ exports.regAdmin = (req, res) => {
         
                         Connection.query('INSERT INTO t_user SET ?', {id: null, uname: username, uemail: email, unama: nama, uphone:phone, utempat_lahir: tempat_lahir, utanggal_lahir: tanggal_lahir, ualamat: alamat, upass: hashedPassword, uphone: phone, utipe: "admin", date_created: tanggal, time_created: waktu}, (error, results) => {
                             if(error){
-                                console.log(error)
+                                res.status(500).json({
+                                    message: error
+                                });
                             } else {
                                 /** Registrasi berhasil dilanjutkan ke login */
                                 res.status(201).json({
@@ -157,7 +159,9 @@ exports.regMahasiswa = (req, res) => {
                     Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
                         (error, results) => {
                         if(error){
-                            console.log(error)
+                            res.status(500).json({
+                                message: error
+                            });
                         } else {
                             /** Registrasi berhasil dilanjutkan ke login */
                             res.status(201).json({
@@ -213,7 +217,9 @@ exports.regPsikolog = (req, res) => {
     
                         Connection.query('INSERT INTO t_user SET ?', {id: null, uname: username, uemail: email, unama: nama, uphone:phone, utempat_lahir: tempat_lahir, utanggal_lahir: tanggal_lahir, ualamat: alamat, upass: hashedPassword, uphone: phone, utipe: "psikolog", date_created: tanggal, time_created: waktu}, (error) => {
                             if(error){
-                                console.log(error)
+                                res.status(500).json({
+                                    message: error
+                                });
                             } else {
                                 /** Registrasi berhasil  */
                                 res.status(201).json({
@@ -253,7 +259,9 @@ exports.editUser = (req, res) => {
             if(tipe === 'admin' || tipe === 'psikolog'){
                 Connection.query('SELECT id FROM t_user WHERE id = ?', [id], async (error, resultsid) => {
                     if(error){
-                        console.log(error);
+                        res.status(500).json({
+                            message: error
+                        });
                     } else if(resultsid.length == 0) {
                         /** id user tidak ada */
                         res.status(500).json({
@@ -277,7 +285,9 @@ exports.editUser = (req, res) => {
                 
                                 Connection.query('UPDATE t_user SET ? WHERE id = ?', [{uname: username, uemail: email, unama: nama, uphone: telepon, utempat_lahir: tempatlahir, utanggal_lahir: tanggallahir, ualamat: alamat, utipe: tipe, date_updated: tanggal, time_updated: waktu}, id], (error, results) => {
                                     if(error){
-                                        console.log(error)
+                                        res.status(500).json({
+                                            message: error
+                                        });
                                     } else {
                                         /** Registrasi berhasil dilanjutkan ke login */
                                         res.status(200).json({
@@ -322,7 +332,9 @@ exports.deleteUser = (req, res) => {
         if(id){
             Connection.query('SELECT id FROM t_user WHERE id = ?', [id], async (error, resultsid) => {
                 if(error){
-                    console.log(error);
+                    res.status(500).json({
+                        message: error
+                    });
                 } else if(resultsid.length == 0) {
                     /** id user tidak ada */
                     res.status(500).json({
