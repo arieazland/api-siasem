@@ -6,7 +6,7 @@ const authController = require("../controllers/auth");
 Router.post('/login', authController.login);
 Router.post('/regadmin', authController.regAdmin);
 Router.post('/regmahasiswa', authController.regMahasiswa);
-// Router.post('/edit', authController.edit);
-// Router.post('/delete', authController.delete);
+Router.put('/edit', authController.edit);
+Router.put('/delete', authController.delete);
 
 module.exports = Router;

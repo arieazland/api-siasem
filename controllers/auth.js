@@ -66,46 +66,51 @@ exports.login = async (req, res) => {
 
 /** Admin Register Process */
 exports.regAdmin = (req, res) => {
-    const { email, nama, phone, password, password2 } = req.body;
+    const { username, email, nama, phone, tempat_lahir, tanggal_lahir, alamat, password, password2, tipeakun } = req.body;
     var tanggal = Moment().format("YYYY-MM-DD");
     var waktu = Moment().format("HH:mm:ss");
     
-    if(email && nama && password && password2){
-        Connection.query('SELECT uemail FROM t_user WHERE uemail = ?', [email], async (error, results) => {
-            if(error) { 
-                // throw error;
-                res.status(500).json({
-                    message: error
-                });
-            } else if(results.length > 0){
-                /** username sudah dipakai */
-                res.status(500).json({
-                    message: "Email sudah terdaftar, silahkan login",
-                });
-            } else if( password !== password2) {
-                /** password dan password konfirmasi tidak sama */
-                res.status(500).json({
-                    message: "Password dan konfirmasi password tidak sama",
-                });
-
-            } else if (results.length == 0){
-                /** Username tersedia */
-                let hashedPassword = await Bcrypt.hash(password, 8);
-
-                Connection.query('INSERT INTO t_user SET ?', {id: null, uemail: email, unama: nama, 
-                    upass: hashedPassword, uphone: phone, utipe: "admin", date_created: tanggal, time_created: waktu}, 
-                    (error, results) => {
-                    if(error){
-                        console.log(error)
-                    } else {
-                        /** Registrasi berhasil dilanjutkan ke login */
-                        res.status(201).json({
-                            message: "User account berhasil di daftarkan",
-                        });
-                    }
-                })
-            }
-        })
+    if(email && nama && password && password2 && tipeakun == 'admin'){
+        if(tipeakun === 'admin'){
+            Connection.query('SELECT uemail FROM t_user WHERE uemail = ?', [email], async (error, results) => {
+                if(error) { 
+                    // throw error;
+                    res.status(500).json({
+                        message: error
+                    });
+                } else if(results.length > 0){
+                    /** username sudah dipakai */
+                    res.status(500).json({
+                        message: "Email sudah terdaftar, silahkan login",
+                    });
+                } else if( password !== password2) {
+                    /** password dan password konfirmasi tidak sama */
+                    res.status(500).json({
+                        message: "Password dan konfirmasi password tidak sama",
+                    });
+    
+                } else if (results.length == 0){
+                    /** Username tersedia */
+                    let hashedPassword = await Bcrypt.hash(password, 8);
+    
+                    Connection.query('INSERT INTO t_user SET ?', {id: null, uname: username, uemail: email, unama: nama, uphone:phone, utempat_lahir: tempat+tempat_lahir, utanggal_lahir: tanggal_lahir, ualamat: alamat, upass: hashedPassword, uphone: phone, utipe: "admin", date_created: tanggal, time_created: waktu}, (error, results) => {
+                        if(error){
+                            console.log(error)
+                        } else {
+                            /** Registrasi berhasil dilanjutkan ke login */
+                            res.status(201).json({
+                                message: "User account berhasil di daftarkan",
+                            });
+                        }
+                    })
+                }
+            })
+        } else {
+            /** Tipe akun bukan admin */
+            res.status(500).json({
+                message: "Tipe akun tidak tepat",
+            });
+        }
     } else {
         /** Field tidak boleh kosong */
         res.status(500).json({
@@ -223,72 +228,81 @@ exports.registerPsikolog = (req, res) => {
 
 /** Edit Account Process */
 exports.edit = (req, res) => {
-    // const { id, email, nama, } = req.body;
-    // var tanggal = Moment().format("YYYY-MM-DD");
-    // var waktu = Moment().format("HH:mm:ss");
-    
-    // if(id && email && nama){
-    //     Connection.query('SELECT email FROM icare_account WHERE email = ? AND id <> ?', [email, id], async (error, results) => {
-    //         if(error) { 
-    //             // throw error;
-    //             res.status(500).json({
-    //                 message: error
-    //             });
-    //         } else if(results.length > 0){
-    //             /** username sudah dipakai */
-    //             res.status(500).json({
-    //                 message: "Email sudah terdaftar silahkan gunakan email yang lain",
-    //             });
-
-    //         } else if (results.length == 0){
-    //             /** Username tersedia */
-
-    //             Connection.query('UPDATE icare_account SET ? WHERE id = ?', [{email: email, nama: nama, 
-    //                 date_updated: tanggal, time_updated: waktu}, id], (error, results) => {
-    //                 if(error){
-    //                     console.log(error)
-    //                 } else {
-    //                     /** Registrasi berhasil dilanjutkan ke login */
-    //                     res.status(201).json({
-    //                         message: "Data user berhasil di ubah",
-    //                     });
-    //                 }
-    //             })
-    //         }
-    //     })
-    // } else {
-    //     /** Field tidak boleh kosong */
-    //     res.status(500).json({
-    //         message: "Field tidak boleh kosong",
-    //     });
-    // }
+    try{
+        const { id, username, email, nama, telepon, tempatlahir, tanggallahir, alamat, tipe} = req.body;
+        var tanggal = Moment().format("YYYY-MM-DD");
+        var waktu = Moment().format("HH:mm:ss");
+        
+        if(id && email && nama && tipe){
+            if(tipe === 'admin' || tipe === 'psikolog'){
+                Connection.query('SELECT uemail FROM t_user WHERE uemail = ? AND id <> ?', [email, id], async (error, results) => {
+                    if(error) { 
+                        // throw error;
+                        res.status(500).json({
+                            message: error
+                        });
+                    } else if(results.length > 0){
+                        /** username sudah dipakai */
+                        res.status(500).json({
+                            message: "Email sudah terdaftar silahkan gunakan email yang lain",
+                        });
+        
+                    } else if (results.length == 0){
+                        /** Username tersedia */
+        
+                        Connection.query('UPDATE t_user SET ? WHERE id = ?', [{uname: username, uemail: email, unama: nama, uphone: telepon, utempat_lahir: tempatlahir, utanggal_lahir: tanggallahir, ualamat: alamat, utipe: tipe, date_updated: tanggal, time_updated: waktu}, id], (error, results) => {
+                            if(error){
+                                console.log(error)
+                            } else {
+                                /** Registrasi berhasil dilanjutkan ke login */
+                                res.status(200).json({
+                                    message: "Data user berhasil di ubah",
+                                });
+                            }
+                        })
+                    }
+                })
+            } else {
+                res.status(500).json({
+                    message: "Tipe akun salah"
+                });
+            }
+        } else {
+            /** Field tidak boleh kosong */
+            res.status(500).json({
+                message: "Field tidak boleh kosong",
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 /** Delete Account Process */
 exports.delete = (req, res) => {
-    // const { id } = req.body;
-    // var tanggal = Moment().format("YYYY-MM-DD");
-    // var waktu = Moment().format("HH:mm:ss");
+    const { id } = req.body;
+    var tanggal = Moment().format("YYYY-MM-DD");
+    var waktu = Moment().format("HH:mm:ss");
     
-    // if(id){
-    //     Connection.query('UPDATE icare_account SET ? WHERE id = ? ', [{account_type: 'nonaktif', date_updated: tanggal, 
-    //     time_updated: waktu}, id], async (error, results) => {
-    //         if(error) { 
-    //             // throw error;
-    //             res.status(500).json({
-    //                 message: error
-    //             });
-    //         } else {
-    //             /** username dinonaktifkan */
-    //             res.status(201).json({
-    //                 message: "User account berhasil di hapus",
-    //             });
-    //         }
-    //     })
-    // } else {
-    //     /** Field tidak boleh kosong */
-    //     res.status(500).json({
-    //         message: "Field tidak boleh kosong",
-    //     });
-    // }
+    if(id){
+        Connection.query('UPDATE t_user SET ? WHERE id = ? ', [{utipe: 'nonaktif', date_updated: tanggal, 
+        time_updated: waktu}, id], async (error, results) => {
+            if(error) { 
+                // throw error;
+                res.status(500).json({
+                    message: error
+                });
+            } else {
+                /** username dinonaktifkan */
+                res.status(201).json({
+                    message: "User account berhasil di hapus",
+                });
+            }
+        })
+    } else {
+        /** Field tidak boleh kosong */
+        res.status(500).json({
+            message: "Field tidak boleh kosong",
+        });
+    }
 };

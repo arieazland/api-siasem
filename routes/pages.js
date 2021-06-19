@@ -14,4 +14,20 @@ Router.get('/', (req, res) => {
     res.send("Hello, welcome to API-SIASEM Page")
 })
 
+/** Route for list user */
+Router.get('/userlist', (req, res) =>{
+    Connection.query("SELECT * FROM t_user WHERE NOT utipe = 'nonaktif' ORDER BY unama ASC", async (error, results) =>{
+        if(error){ 
+            res.status(500).json({
+                message: 'Get data users error'
+            })
+        } else if(results.length >= 0){
+            /** Kirim data user */
+            res.status(201).json({
+                data: results
+            })
+        }
+    })
+})
+
 module.exports = Router;
