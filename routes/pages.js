@@ -23,7 +23,23 @@ Router.get('/userlist', (req, res) =>{
             })
         } else if(results.length >= 0){
             /** Kirim data user */
-            res.status(201).json({
+            res.status(200).json({
+                data: results
+            })
+        }
+    })
+})
+
+/** Route for list acara */
+Router.get('/acaralist', (req, res) =>{
+    Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' ORDER BY id ASC", async (error, results) =>{
+        if(error){ 
+            res.status(500).json({
+                message: 'Get data acara error'
+            })
+        } else if(results.length >= 0){
+            /** Kirim data user */
+            res.status(200).json({
                 data: results
             })
         }

@@ -31,17 +31,17 @@ exports.login = async (req, res) => {
                     });
                 } else if(results.length > 0 && !(await Bcrypt.compare(password, results[0].upass))){
                     /** password salah */
-                    res.status(401).json({
+                    res.status(403).json({
                         message: 'Email atau NIM atau password anda salah'
                     });
                 } else if (results.length > 0 && results[0].utipe == 'nonaktif'){
                     /** user nonaktif */
-                    res.status(401).json({
+                    res.status(403).json({
                         message: 'User anda sudah di nonaktifkan'
                     });
                 } else if(results.length > 0 && await Bcrypt.compare(password, results[0].upass) && results[0].utipe != 'nonaktif') {
                     /** login sukses */
-                    res.status(200).json({
+                    res.status(202).json({
                         message: 'Login Berhasil',
                         data: results
                     });
@@ -53,7 +53,7 @@ exports.login = async (req, res) => {
             });
         } else {
             /** username dan password kosong */
-            res.status(500).json({
+            res.status(403).json({
                 message: 'Field tidak boleh kosong'
             });
         }
@@ -81,12 +81,12 @@ exports.regAdmin = (req, res) => {
                         });
                     } else if(results.length > 0){
                         /** username sudah dipakai */
-                        res.status(500).json({
+                        res.status(403).json({
                             message: "Email sudah terdaftar, silahkan login atau cek kembali email anda",
                         });
                     } else if( password !== password2) {
                         /** password dan password konfirmasi tidak sama */
-                        res.status(500).json({
+                        res.status(403).json({
                             message: "Password dan konfirmasi password tidak sama",
                         });
         
@@ -110,13 +110,13 @@ exports.regAdmin = (req, res) => {
                 })
             } else {
                 /** Tipe akun bukan admin */
-                res.status(500).json({
+                res.status(403).json({
                     message: "Tipe akun tidak tepat",
                 });
             }
         } else {
             /** Field tidak boleh kosong */
-            res.status(500).json({
+            res.status(403).json({
                 message: "Field tidak boleh kosong",
             });
         }
@@ -143,13 +143,13 @@ exports.regMahasiswa = (req, res) => {
                     });
                 } else if(results.length > 0){
                     /** username sudah dipakai */
-                    res.status(500).json({
+                    res.status(403).json({
                         message: "NIM sudah terdaftar, silahkan login atau cek kembali NIM anda",
                     });
                     
                 } else if( password !== password2) {
                     /** password dan password konfirmasi tidak sama */
-                    res.status(500).json({
+                    res.status(403).json({
                         message: "Password dan konfirmasi password tidak sama",
                     });
                 } else if (results.length == 0){
@@ -173,7 +173,7 @@ exports.regMahasiswa = (req, res) => {
             })
         } else {
             /** Field tidak boleh kosong */
-            res.status(500).json({
+            res.status(403).json({
                 message: "Field tidak boleh kosong",
             });
         }
@@ -201,13 +201,13 @@ exports.regPsikolog = (req, res) => {
                         });
                     } else if(results.length > 0){
                         /** username sudah dipakai */
-                        res.status(500).json({
+                        res.status(403).json({
                             message: "Email sudah terdaftar, silahkan login atau cek kembali email anda",
                         });
                         
                     } else if( password !== password2) {
                         /** password dan password konfirmasi tidak sama */
-                        res.status(500).json({
+                        res.status(403).json({
                             message: "Password dan konfirmasi password tidak sama",
                         });
     
@@ -231,13 +231,13 @@ exports.regPsikolog = (req, res) => {
                 })
             } else {
                 /** Tipe akun bukan admin */
-                res.status(500).json({
+                res.status(403).json({
                     message: "Tipe akun tidak tepat",
                 });
             }
         } else {
             /** Field tidak boleh kosong */
-            res.status(500).json({
+            res.status(403).json({
                 message: "Field tidak boleh kosong",
             });
         }
@@ -264,7 +264,7 @@ exports.editUser = (req, res) => {
                         });
                     } else if(resultsid.length == 0) {
                         /** id user tidak ada */
-                        res.status(500).json({
+                        res.status(403).json({
                             message: "User tidak terdaftar",
                         });
                     } else if(resultsid.length > 0) {
@@ -276,7 +276,7 @@ exports.editUser = (req, res) => {
                                 });
                             } else if(results.length > 0){
                                 /** username sudah dipakai */
-                                res.status(500).json({
+                                res.status(403).json({
                                     message: "Email sudah terdaftar silahkan gunakan email yang lain",
                                 });
                 
@@ -299,19 +299,19 @@ exports.editUser = (req, res) => {
                         })
                     } else {
                         /** error */
-                        res.status(500).json({
+                        res.status(403).json({
                             message: "Error, please contact developer",
                         });
                     }
                 });
             } else {
-                res.status(500).json({
+                res.status(403).json({
                     message: "Tipe akun salah"
                 });
             }
         } else {
             /** Field tidak boleh kosong */
-            res.status(500).json({
+            res.status(403).json({
                 message: "Field tidak boleh kosong",
             });
         }
@@ -337,7 +337,7 @@ exports.deleteUser = (req, res) => {
                     });
                 } else if(resultsid.length == 0) {
                     /** id user tidak ada */
-                    res.status(500).json({
+                    res.status(403).json({
                         message: "User tidak terdaftar",
                     });
                 } else if(resultsid.length >0) {
@@ -349,21 +349,21 @@ exports.deleteUser = (req, res) => {
                             });
                         } else {
                             /** username dinonaktifkan */
-                            res.status(201).json({
+                            res.status(200).json({
                                 message: "User account berhasil di hapus",
                             });
                         }
                     })
                 } else {
                     /** error */
-                    res.status(500).json({
+                    res.status(403).json({
                         message: "Error, please contact developer",
                     });
                 }
             });
         } else {
             /** Field tidak boleh kosong */
-            res.status(500).json({
+            res.status(403).json({
                 message: "Field tidak boleh kosong",
             });
         }
