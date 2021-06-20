@@ -42,13 +42,19 @@ Router.get('/acaralist', (req, res) =>{
     try{
         Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' ORDER BY id ASC", async (error, results) =>{
             if(error) { 
+                /** kirim error */
                 res.status(500).json({
-                    message: 'Get data acara error'
+                    message: error
                 })
             } else if(results.length >= 0) {
                 /** Kirim data user */
                 res.status(200).json({
                     data: results
+                })
+            } else {
+                /** kirim error */
+                res.status(500).json({
+                    message: error
                 })
             }
         })
@@ -135,6 +141,36 @@ Router.post('/partisipant', (req, res) =>{
                 }
             });
         }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+});
+
+/** Route for part */
+Router.get('/partlist', (req, res) =>{
+    try{
+        Connection.query("SELECT * FROM t_part WHERE NOT status = 'hapus' ORDER BY id ASC", async (error, results) => {
+            if(error) {
+                /** Kirim error */
+                res.status(500).json({
+                    message: error
+                })
+            } else if(results.length >= 0){
+                /** Kirim data part */
+                res.status(200).json({
+                    data: results
+                })
+            } else {
+                /** Kirim error */
+                res.status(500).json({
+                    message: error
+                })
+            }
+        })
+
     } catch(error) {
         /** Kirim error */
         res.status(500).json({
