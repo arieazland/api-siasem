@@ -19,7 +19,12 @@ exports.regPartisipant = async (req, res) => {
 
         if(iduser && idacara){
             /** cek data user */
-            Connection.query('SELECT id FROM t_user WHERE id = ?', [iduser], async (error, resultsiduser) => {
+            var sqluser = "SELECT id FROM t_user WHERE id IN (?)";
+            var valueuser = [];
+            for( var i = 0; i < iduser.length; i++){
+                valueuser.push([iduser[i]]);
+            }
+            Connection.query(sqluser, [valueuser], async (error, resultsiduser) => {
                 if(error) {
                     /** Send error */
                     res.status(500).json({
@@ -32,7 +37,7 @@ exports.regPartisipant = async (req, res) => {
                     });
                 } else if(resultsiduser.length > 0) {
                     /** cek data acara */
-                    Connection.query('SELECT id FROM t_acara WHERE id = ?', [idacara], async (error, resultsidacara) => {
+                    Connection.query('SELECT id FROM t_acara WHERE id = ?', idacara, async (error, resultsidacara) => {
                         if(error) {
                             /** Send error */
                             res.status(500).json({
@@ -45,7 +50,12 @@ exports.regPartisipant = async (req, res) => {
                             });
                         } else if (resultsidacara.length > 0) {
                             /** Cek iduser apakah sudah terdaftar di partisipant */
-                            Connection.query('SELECT iduser FROM t_partisipant WHERE idacara = ? AND iduser = ?', [idacara, iduser], async (error, resultscekuser) => {
+                            var sqlpartisipant = "SELECT iduser FROM t_partisipant WHERE idacara = ? AND iduser IN (?)";
+                            var valuepartisipant = [];
+                            for( var j = 0; j < iduser.length; j++){
+                                valuepartisipant.push([iduser[j]]);
+                            }
+                            Connection.query(sqlpartisipant, [idacara, valuepartisipant], async (error, resultscekuser) => {
                                 if(error) {
                                     /** Send error */
                                     res.status(500).json({
@@ -53,7 +63,12 @@ exports.regPartisipant = async (req, res) => {
                                     });
                                 } else if(resultscekuser.length == 0) {
                                     /** Proses insert data user dan acara ke partisipant */
-                                    Connection.query('INSERT INTO t_partisipant SET ?', {id: null, iduser: iduser, idacara: idacara, date_created: tanggal, time_created: waktu}, async (error, result) => {
+                                    var sqlinsert = "INSERT INTO t_partisipant (id, iduser, idacara, date_created, time_created) VALUES ?";
+                                    var valueinsert = [];
+                                    for( var k = 0; k < iduser.length; k++){
+                                        valueinsert.push([null, iduser[k], idacara, tanggal, waktu]);
+                                    }
+                                    Connection.query(sqlinsert, [valueinsert], async (error, result) => {
                                         if(error) {
                                             /** Send error */
                                             res.status(500).json({
@@ -70,6 +85,7 @@ exports.regPartisipant = async (req, res) => {
                                     /** Acara tidak terdaftar */
                                     res.status(403).json({
                                         message: "User sudah terdaftar dalam data partisipan",
+                                        idacara
                                     });
                                 }
                             })
@@ -91,6 +107,7 @@ exports.regPartisipant = async (req, res) => {
             /** Field tidak boleh kosong */
             res.status(403).json({
                 message: "Field tidak boleh kosong",
+                idacara
             });
         }
 
@@ -121,6 +138,7 @@ exports.deletePartisipant = async (req, res) => {
                     /** Partisipant tidak terdaftar */
                     res.status(403).json({
                         message: "Data partisipant tidak terdaftar",
+                        idacara
                     });
                 } else if(resultsidpartisipant.length > 0) {
                     /** cek data user */
@@ -160,6 +178,7 @@ exports.deletePartisipant = async (req, res) => {
                                             /** User tidak terdaftar */
                                             res.status(403).json({
                                                 message: "User tidak terdaftar dalam data partisipan",
+                                                idacara
                                             });
                                         } else if(resultscekuser.length > 0) {
                                             /** Proses delete data user dan acara dari partisipant */
@@ -196,6 +215,7 @@ exports.deletePartisipant = async (req, res) => {
                     /** Send error */
                     res.status(500).json({
                         message: 'Error, please contact developer',
+                        idacara
                     });
                 }
             });
