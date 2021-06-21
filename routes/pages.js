@@ -140,6 +140,11 @@ Router.post('/partisipant', (req, res) =>{
                     })
                 }
             });
+        } else {
+            /** Field kosong */
+            res.status(500).json({
+                message: 'Field tidak boleh kosong'
+            })
         }
     } catch(error) {
         /** Kirim error */
@@ -171,6 +176,75 @@ Router.get('/partlist', (req, res) =>{
             }
         })
 
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+});
+
+/** Route for part */
+Router.post('/aspeklist', (req, res) =>{
+    try{
+        const {selectpart} = req.body;
+
+        if(selectpart){
+            Connection.query("SELECT * FROM t_part p WHERE p.id = ?", [selectpart], async (error, resultsidpart) => {
+                if(error) {
+                    /** Kirim error */
+                    res.status(500).json({
+                        message: error
+                    })
+                } else if(resultsidpart.length > 0) {
+                    Connection.query("SELECT a.id AS idaspek, a.nama AS namaaspek, a.status AS statusaspek, p.id AS idpart, p.nama AS namapart, p.status AS statuspart FROM t_aspek a, t_part p WHERE a.idpart = p.id AND NOT a.status = 'hapus' AND NOT p.status = 'hapus' AND p.id = ? ORDER BY p.id ASC", [selectpart] ,async (error, results) => {
+                        if(error) {
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(results.length >= 0){
+                            Connection.query("SELECT * FROM t_part", async (error, resultpart) => {
+                                if(error){
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if(resultpart.length >= 0) {
+                                    /** Kirim data part */
+                                    res.status(200).json({
+                                        results,
+                                        selectpart,
+                                        resultsidpart,
+                                        resultpart
+                                    })
+                                } else {
+                                    /** Data part error */
+                                    res.status(500).json({
+                                        message: 'Error, contact developer'
+                                    })
+                                }
+                            });
+                        } else {
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        }
+                    })
+                } else if(resultsidpart.length == 0) {
+                    /** Filed kosong */
+                    res.status(500).json({
+                        message: 'Part tidak terdaftar'
+                    })
+                }
+            });
+        } else {
+            /** Filed kosong */
+            res.status(500).json({
+                message: 'Field tidak boleh kosong'
+            })
+        }
     } catch(error) {
         /** Kirim error */
         res.status(500).json({
