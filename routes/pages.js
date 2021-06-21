@@ -185,7 +185,7 @@ Router.get('/partlist', (req, res) =>{
 });
 
 /** Route for part */
-Router.post('/aspeklist', (req, res) =>{
+Router.post('/listaspek', (req, res) =>{
     try{
         const {selectpart} = req.body;
 
