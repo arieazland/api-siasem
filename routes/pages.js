@@ -66,6 +66,37 @@ Router.get('/acaralist', (req, res) =>{
     }
 })
 
+/** Route for list acara */
+Router.get('/acaralistmahasiswa', (req, res) =>{
+    try{
+        var tanggal = Moment().format("YYYY-MM-DD");
+
+        Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, results) =>{
+            if(error) { 
+                /** kirim error */
+                res.status(500).json({
+                    message: error
+                })
+            } else if(results.length >= 0) {
+                /** Kirim data user */
+                res.status(200).json({
+                    data: results
+                })
+            } else {
+                /** kirim error */
+                res.status(500).json({
+                    message: error
+                })
+            }
+        })
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+})
+
 /** Route for partisipan */
 Router.post('/partisipant', (req, res) =>{
     try{
@@ -184,7 +215,7 @@ Router.get('/partlist', (req, res) =>{
     }
 });
 
-/** Route for part */
+/** Route for aspek */
 Router.post('/listaspek', (req, res) =>{
     try{
         const {selectpart} = req.body;
@@ -243,6 +274,513 @@ Router.post('/listaspek', (req, res) =>{
             /** Filed kosong */
             res.status(500).json({
                 message: 'Field tidak boleh kosong'
+            })
+        }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+});
+
+/** Route for aspek all */
+Router.get('/listaspekall', (req, res) =>{
+    try{
+        Connection.query("SELECT a.id AS idaspek, a.nama AS namaaspek, a.status AS statusaspek, p.id AS idpart, p.nama AS namapart, p.status AS statuspart FROM t_aspek a, t_part p WHERE a.idpart = p.id AND NOT a.status = 'hapus' AND NOT p.status = 'hapus' ORDER BY a.nama ASC",async (error, data) => {
+            if(error) {
+                /** Kirim error */
+                res.status(500).json({
+                    message: error
+                })
+            } else if(data.length >= 0){
+                /** Kirim data part */
+                res.status(200).json({
+                    data
+                })
+            } else {
+                /** Kirim error */
+                res.status(500).json({
+                    message: error
+                })
+            }
+        });
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+});
+
+/** Route for soal */
+Router.post('/listsoal', (req, res) =>{
+    try{
+        const {selectaspek} = req.body;
+
+        if(selectaspek){
+            Connection.query("SELECT * FROM t_aspek a WHERE a.id = ?", [selectaspek], async (error, resultsidaspek) => {
+                if(error) {
+                    /** Kirim error */
+                    res.status(500).json({
+                        message: error
+                    })
+                } else if(resultsidaspek.length > 0) {
+                    Connection.query("SELECT a.id AS idaspek, a.nama AS namaaspek, a.status AS statusaspek, p.id AS idpart, p.nama AS namapart, p.status AS statuspart, s.id AS idsoal, s.soal AS soal, s.tipe AS tipe, s.skormax AS skormax FROM t_aspek a, t_part p, t_soal s WHERE a.idpart = p.id AND NOT a.status = 'hapus' AND NOT p.status = 'hapus' AND NOT s.status = 'hapus' AND a.id = ? ORDER BY a.id ASC", [selectaspek] ,async (error, results) => {
+                        if(error) {
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(results.length >= 0){
+                            Connection.query("SELECT * FROM t_aspek", async (error, resultaspek) => {
+                                if(error){
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if(resultaspek.length >= 0) {
+                                    /** Kirim data part */
+                                    res.status(200).json({
+                                        results,
+                                        selectaspek,
+                                        resultsidaspek,
+                                        resultaspek
+                                    })
+                                } else {
+                                    /** Data part error */
+                                    res.status(500).json({
+                                        message: 'Error, contact developer'
+                                    })
+                                }
+                            });
+                        } else {
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        }
+                    })
+                } else if(resultsidaspek.length == 0) {
+                    /** Filed kosong */
+                    res.status(500).json({
+                        message: 'Aspek tidak terdaftar'
+                    })
+                }
+            });
+        } else {
+            /** Filed kosong */
+            res.status(500).json({
+                message: 'Field tidak boleh kosong'
+            })
+        }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+});
+
+/** Route for part */
+Router.post('/listpertanyaan', (req, res) =>{
+    try{
+        const { selectacara, idu } = req.body;
+
+        if(selectacara && idu){
+            /** Cek apakah user sudah ada jawaban di part 1 */
+            Connection.query('select t_user.unim, t_user.unama, t_part.id, t_part.nama from t_answer, t_part, t_soal, t_user where iduser = ? AND t_part.id = 1 AND t_answer.idsoal = t_soal.id AND t_soal.idpart = t_part.id AND t_user.id = t_answer.iduser GROUP BY t_part.id ', [idu] ,async (error, cekjawaban1) => {
+                if(error){
+                    /** Kirim error */
+                    res.status(500).json({
+                        message: error
+                    })
+                } else if(cekjawaban1.length > 0){
+                    /** jika sudah ada jawaban part 1, cek jawaban di part 2 */
+                    Connection.query('select t_user.unim, t_user.unama, t_part.id, t_part.nama from t_answer, t_part, t_soal, t_user where iduser = ? AND t_part.id = 2 AND t_answer.idsoal = t_soal.id AND t_soal.idpart = t_part.id AND t_user.id = t_answer.iduser AND t_answer.idacara = ? GROUP BY t_part.id ', [idu, selectacara] ,async (error, cekjawaban2) => {
+                        if(error){
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(cekjawaban2.length > 0){
+                            /** jika sudah ada jawaban part 2, cek jawaban di part 3 */
+                            Connection.query('select t_user.unim, t_user.unama, t_part.id, t_part.nama from t_answer, t_part, t_soal, t_user where iduser = ? AND t_part.id = 3 AND t_answer.idsoal = t_soal.id AND t_soal.idpart = t_part.id AND t_user.id = t_answer.iduser AND t_answer.idacara = ? GROUP BY t_part.id ', [idu, selectacara] ,async (error, cekjawaban3) => {
+                                if(error){
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if (cekjawaban3.length > 0){
+                                    /** jika sudah ada jawaban part 3, cek jawaban di part 4 */
+                                    Connection.query('select t_user.unim, t_user.unama, t_part.id, t_part.nama from t_answer, t_part, t_soal, t_user where iduser = ? AND t_part.id = 4 AND t_answer.idsoal = t_soal.id AND t_soal.idpart = t_part.id AND t_user.id = t_answer.iduser AND t_answer.idacara = ? GROUP BY t_part.id ', [idu, selectacara] ,async (error, cekjawaban4) => {
+                                        if(error){
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: error
+                                            })
+                                        } else if(cekjawaban4.length > 0){
+                                            /** jika sudah ada jawaban part 4, cek jawaban di part 5 */
+                                            Connection.query('select t_user.unim, t_user.unama, t_part.id, t_part.nama from t_answer, t_part, t_soal, t_user where iduser = ? AND t_part.id = 5 AND t_answer.idsoal = t_soal.id AND t_soal.idpart = t_part.id AND t_user.id = t_answer.iduser AND t_answer.idacara = ? GROUP BY t_part.id ', [idu, selectacara] ,async (error, cekjawaban5) => {
+                                                if(error){
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: error
+                                                    })
+                                                } else if(cekjawaban5.length > 0){
+                                                    /** jika sudah ada jawaban part 5, kirim notif assessment selesai */
+                                                    /** cek ketersediaan acara */
+                                                    Connection.query('SELECT id FROM t_acara where id = ?', [selectacara], async (error, resultsidacara) => {
+                                                        if(error){
+                                                           /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: error
+                                                            }) 
+                                                        } else if(resultsidacara.length > 0) {
+                                                            Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, dataacara) => {
+                                                                if(error) {
+                                                                    /** Kirim error */
+                                                                    res.status(500).json({
+                                                                        message: error
+                                                                    }) 
+                                                                } else if(dataacara.length >= 0) {
+                                                                    res.status(200).json({
+                                                                        selectacara,
+                                                                        dataacara,
+                                                                        message: 'Assessment selesai, silahkan logout. Terima kasih'
+                                                                    })
+                                                                } else {
+                                                                    /** Kirim error */
+                                                                    res.status(500).json({
+                                                                        message: 'Error, please contact developer'
+                                                                    }) 
+                                                                }
+                                                            })
+                                                        } else if(resultsidacara.length == 0) {
+                                                            res.status(500).json({
+                                                                message: 'Acara tidak terdaftar'
+                                                            }) 
+                                                        } else {
+                                                            /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: error
+                                                            }) 
+                                                        }
+                                                    })
+                                                } else if(cekjawaban5.length == 0){
+                                                    /** jika belum ada jawaban di part 5 tampilkan pertanyaan part 5 */
+                                                    Connection.query('SELECT t_soal.id AS idsoal, t_soal.soal AS soal, t_soal.tipe AS tipe, t_soal.skormax AS skormax FROM t_soal INNER JOIN t_part ON t_soal.idpart = t_part.id INNER JOIN t_aspek ON t_soal.idaspek = t_aspek.id WHERE t_part.id = 5 ORDER BY t_soal.id ASC', async (error, results) => {
+                                                        if(error){
+                                                            /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: error
+                                                            })
+                                                        } else if(results.length >= 0){
+                                                            /** cek ketersediaan acara */
+                                                            Connection.query('SELECT id FROM t_acara where id = ?', [selectacara], async (error, resultsidacara) => {
+                                                                if(error){
+                                                                   /** Kirim error */
+                                                                    res.status(500).json({
+                                                                        message: error
+                                                                    }) 
+                                                                } else if(resultsidacara.length > 0) {
+                                                                    Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, dataacara) => {
+                                                                        if(error) {
+                                                                            /** Kirim error */
+                                                                            res.status(500).json({
+                                                                                message: error
+                                                                            }) 
+                                                                        } else if(dataacara.length >= 0) {
+                                                                            res.status(200).json({
+                                                                                results,
+                                                                                selectacara,
+                                                                                dataacara,
+                                                                                partpertanyaan : 5
+                                                                            })
+                                                                        } else {
+                                                                            /** Kirim error */
+                                                                            res.status(500).json({
+                                                                                message: 'Error, please contact developer'
+                                                                            }) 
+                                                                        }
+                                                                    })
+                                                                } else if(resultsidacara.length == 0) {
+                                                                    res.status(500).json({
+                                                                        message: 'Acara tidak terdaftar'
+                                                                    }) 
+                                                                } else {
+                                                                    /** Kirim error */
+                                                                    res.status(500).json({
+                                                                        message: error
+                                                                    }) 
+                                                                }
+                                                            })
+                                                        } else {
+                                                            /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: 'Error, please contact developer'
+                                                            }) 
+                                                        }
+                                                    })
+                                                } else {
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: 'Error, please contact developer'
+                                                    }) 
+                                                }
+                                            })
+                                        } else if(cekjawaban4.length == 0){
+                                            /** jika belum ada jawaban di part 4 tampilkan pertanyaan part 4 */
+                                            Connection.query('SELECT t_soal.id AS idsoal, t_soal.soal AS soal, t_soal.tipe AS tipe, t_soal.skormax AS skormax FROM t_soal INNER JOIN t_part ON t_soal.idpart = t_part.id INNER JOIN t_aspek ON t_soal.idaspek = t_aspek.id WHERE t_part.id = 4 ORDER BY t_soal.id ASC', async (error, results) => {
+                                                if(error){
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: error
+                                                    })
+                                                } else if(results.length >= 0){
+                                                    /** cek ketersediaan acara */
+                                                    Connection.query('SELECT id FROM t_acara where id = ?', [selectacara], async (error, resultsidacara) => {
+                                                        if(error){
+                                                           /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: error
+                                                            }) 
+                                                        } else if(resultsidacara.length > 0) {
+                                                            Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, dataacara) => {
+                                                                if(error) {
+                                                                    /** Kirim error */
+                                                                    res.status(500).json({
+                                                                        message: error
+                                                                    }) 
+                                                                } else if(dataacara.length >= 0) {
+                                                                    res.status(200).json({
+                                                                        results,
+                                                                        selectacara,
+                                                                        dataacara,
+                                                                        partpertanyaan : 4
+                                                                    })
+                                                                } else {
+                                                                    /** Kirim error */
+                                                                    res.status(500).json({
+                                                                        message: 'Error, please contact developer'
+                                                                    }) 
+                                                                }
+                                                            })
+                                                        } else if(resultsidacara.length == 0) {
+                                                            res.status(500).json({
+                                                                message: 'Acara tidak terdaftar'
+                                                            }) 
+                                                        } else {
+                                                            /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: error
+                                                            }) 
+                                                        }
+                                                    })
+                                                } else {
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: 'Error, please contact developer'
+                                                    }) 
+                                                }
+                                            })
+                                        } else {
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: 'Error, please contact developer'
+                                            }) 
+                                        }
+                                    })
+                                } else if(cekjawaban3.length == 0){
+                                    /** jika belum ada jawaban di part 3 tampilkan pertanyaan part 3 */
+                                    Connection.query('SELECT t_soal.id AS idsoal, t_soal.soal AS soal, t_soal.tipe AS tipe, t_soal.skormax AS skormax FROM t_soal INNER JOIN t_part ON t_soal.idpart = t_part.id INNER JOIN t_aspek ON t_soal.idaspek = t_aspek.id WHERE t_part.id = 3 ORDER BY t_soal.id ASC', async (error, results) => {
+                                        if(error){
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: error
+                                            })
+                                        } else if(results.length >= 0){
+                                            /** cek ketersediaan acara */
+                                            Connection.query('SELECT id FROM t_acara where id = ?', [selectacara], async (error, resultsidacara) => {
+                                                if(error){
+                                                   /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: error
+                                                    }) 
+                                                } else if(resultsidacara.length > 0) {
+                                                    Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, dataacara) => {
+                                                        if(error) {
+                                                            /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: error
+                                                            }) 
+                                                        } else if(dataacara.length >= 0) {
+                                                            res.status(200).json({
+                                                                results,
+                                                                selectacara,
+                                                                dataacara,
+                                                                partpertanyaan : 3
+                                                            })
+                                                        } else {
+                                                            /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: 'Error, please contact developer'
+                                                            }) 
+                                                        }
+                                                    })
+                                                } else if(resultsidacara.length == 0) {
+                                                    res.status(500).json({
+                                                        message: 'Acara tidak terdaftar'
+                                                    }) 
+                                                } else {
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: error
+                                                    }) 
+                                                }
+                                            })
+                                        } else {
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: 'Error, please contact developer'
+                                            }) 
+                                        }
+                                    })
+                                } else {
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: 'Error, please contact developer'
+                                    }) 
+                                }
+                            })
+                        } else if(cekjawaban2.length == 0) {
+                            /** jika belum ada jawaban di part 2 tampilkan pertanyaan part 2 */
+                            Connection.query('SELECT t_soal.id AS idsoal, t_soal.soal AS soal, t_soal.tipe AS tipe, t_soal.skormax AS skormax FROM t_soal INNER JOIN t_part ON t_soal.idpart = t_part.id INNER JOIN t_aspek ON t_soal.idaspek = t_aspek.id WHERE t_part.id = 2 ORDER BY t_soal.id ASC', async (error, results) => {
+                                if(error){
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if(results.length >= 0){
+                                    /** cek ketersediaan acara */
+                                    Connection.query('SELECT id FROM t_acara where id = ?', [selectacara], async (error, resultsidacara) => {
+                                        if(error){
+                                           /** Kirim error */
+                                            res.status(500).json({
+                                                message: error
+                                            }) 
+                                        } else if(resultsidacara.length > 0) {
+                                            Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, dataacara) => {
+                                                if(error) {
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: error
+                                                    }) 
+                                                } else if(dataacara.length >= 0) {
+                                                    res.status(200).json({
+                                                        results,
+                                                        selectacara,
+                                                        dataacara,
+                                                        partpertanyaan : 2
+                                                    })
+                                                } else {
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: 'Error, please contact developer'
+                                                    }) 
+                                                }
+                                            })
+                                        } else if(resultsidacara.length == 0) {
+                                            res.status(500).json({
+                                                message: 'Acara tidak terdaftar'
+                                            }) 
+                                        } else {
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: error
+                                            }) 
+                                        }
+                                    })
+                                } else {
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: 'Error, please contact developer'
+                                    }) 
+                                }
+                            })
+                        } else {
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: 'Error, please contact developer'
+                            }) 
+                        }
+                    })
+                } else if(cekjawaban1.length == 0) {
+                    /** jika belum ada jawaban di part 1 tampilkan pertanyaan part 1 */
+                    Connection.query('SELECT t_soal.id AS idsoal, t_soal.soal AS soal, t_soal.tipe AS tipe, t_soal.skormax AS skormax FROM t_soal INNER JOIN t_part ON t_soal.idpart = t_part.id INNER JOIN t_aspek ON t_soal.idaspek = t_aspek.id WHERE t_part.id = 1 ORDER BY t_soal.id ASC', async (error, results) => {
+                        if(error){
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(results.length >= 0){
+                            /** cek ketersediaan acara */
+                            Connection.query('SELECT id FROM t_acara where id = ?', [selectacara], async (error, resultsidacara) => {
+                                if(error){
+                                   /** Kirim error */
+                                    res.status(500).json({
+                                        message: error
+                                    }) 
+                                } else if(resultsidacara.length > 0) {
+                                    Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, dataacara) => {
+                                        if(error) {
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: error
+                                            }) 
+                                        } else if(dataacara.length >= 0) {
+                                            res.status(200).json({
+                                                results,
+                                                selectacara,
+                                                dataacara,
+                                                partpertanyaan : 1
+                                            })
+                                        } else {
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: 'Error, please contact developer'
+                                            }) 
+                                        }
+                                    })
+                                } else if(resultsidacara.length == 0) {
+                                    res.status(500).json({
+                                        message: 'Acara tidak terdaftar'
+                                    }) 
+                                } else {
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: error
+                                    }) 
+                                }
+                            })
+                        } else {
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: 'Error, please contact developer'
+                            }) 
+                        }
+                    })
+                } else {
+                    /** Kirim error */
+                    res.status(403).json({
+                        message: "Error, please contact developer"
+                    })
+                }
+            })
+        } else {
+            /** Kirim error */
+            res.status(500).json({
+                message: "Field tidak boleh kosong"
             })
         }
     } catch(error) {

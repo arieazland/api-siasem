@@ -34,6 +34,7 @@ app.use('/partisipant', require('./routes/partisipant'));
 app.use('/part', require('./routes/part'));
 app.use('/aspek', require('./routes/aspek'));
 // app.use('/soal', require('./routes/soal'));
+app.use('/assessment', require('./routes/assessment'));
 // app.use('/jawab', require('./routes/jawab'));
 
 let port = process.env.DB_PORT || 8080;
