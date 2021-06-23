@@ -834,7 +834,7 @@ Router.post('/hasilassessment', (req, res) =>{
                     })
                 } else if(acaraterpilih.length > 0) {
                     /** get data mahasiswa */
-                    Connection.query("SELECT u.id AS idmahasiswa, u.unim AS nim, u.unama AS namamahasiswa, u.ufakultas AS fakultas, u.uprodi AS prodi FROM t_user u INNER JOIN t_answer a ON a.iduser = u.id INNER JOIN t_acara c ON c.id = a.idacara WHERE u.id NOT IN (SELECT mid FROM t_kesimpulan) AND a.idacara = ? GROUP BY u.id", [selectacara], async (error, resultcekmahasiswa) => {
+                    Connection.query("SELECT u.id AS idmahasiswa, u.unim AS nim, u.unama AS namamahasiswa, u.ufakultas AS fakultas, u.uprodi AS prodi FROM t_user u INNER JOIN t_answer a ON a.iduser = u.id INNER JOIN t_acara c ON c.id = a.idacara WHERE u.id NOT IN (SELECT idmahasiswa FROM t_kesimpulan) AND u.utipe = 'mahasiswa' AND a.idacara = ? GROUP BY u.id ORDER BY u.unama", [selectacara], async (error, resultcekmahasiswa) => {
                         if(error) {
                             /** send error */
                             res.status(500).json({
@@ -980,14 +980,14 @@ Router.post('/hasilassessmentmahasiswa', (req, res) =>{
                                                                             })
                                                                         } else if(dataacara.length >= 0) {
                                                                             /** get data mahasiswa yang sudah menjawab */
-                                                                            Connection.query("SELECT u.id AS idmahasiswa, u.unim AS nim, u.unama AS namamahasiswa, u.ufakultas AS fakultas, u.uprodi AS prodi FROM t_user u INNER JOIN t_answer a ON a.iduser = u.id INNER JOIN t_acara c ON c.id = a.idacara WHERE u.id NOT IN (SELECT mid FROM t_kesimpulan) AND a.idacara = ? GROUP BY u.id", [selectacara], async (error, resultcekmahasiswa) => {
+                                                                            Connection.query("SELECT u.id AS idmahasiswa, u.unim AS nim, u.unama AS namamahasiswa, u.ufakultas AS fakultas, u.uprodi AS prodi FROM t_user u INNER JOIN t_answer a ON a.iduser = u.id INNER JOIN t_acara c ON c.id = a.idacara WHERE u.id NOT IN (SELECT idmahasiswa FROM t_kesimpulan) AND u.utipe = 'mahasiswa' AND a.idacara = ? GROUP BY u.id ORDER BY u.unama", [selectacara], async (error, resultcekmahasiswa) => {
                                                                                 if(error) {
                                                                                     /** Kirim error */
                                                                                     res.status(500).json({
                                                                                         message: error
                                                                                     })
                                                                                 } else if(resultcekmahasiswa.length >= 0) {
-                                                                                    Connection.query("SELECT m.id AS idmahasiswa, m.unama AS mahasiswa, m.unim AS nim, m.ufakultas AS fakultas, m.uprodi AS prodi FROM t_user m WHERE m.id = ?", [selectmahasiswa], async (error, datamahasiswa) => {
+                                                                                    Connection.query("SELECT m.id AS idmahasiswa, m.unama AS mahasiswa, m.unim AS nim, m.ufakultas AS fakultas, m.uprodi AS prodi FROM t_user m WHERE m.id = ? AND m.utipe = 'mahasiswa' ORDER BY m.unama ASC", [selectmahasiswa], async (error, datamahasiswa) => {
                                                                                         if(error) {
                                                                                             /** Kirim error */
                                                                                             res.status(500).json({
