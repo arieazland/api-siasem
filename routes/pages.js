@@ -326,14 +326,14 @@ Router.post('/listsoal', (req, res) =>{
                         message: error
                     })
                 } else if(resultsidaspek.length > 0) {
-                    Connection.query("SELECT a.id AS idaspek, a.nama AS namaaspek, a.status AS statusaspek, p.id AS idpart, p.nama AS namapart, p.status AS statuspart, s.id AS idsoal, s.soal AS soal, s.tipe AS tipe, s.skormax AS skormax FROM t_aspek a, t_part p, t_soal s WHERE a.idpart = p.id AND NOT a.status = 'hapus' AND NOT p.status = 'hapus' AND NOT s.status = 'hapus' AND a.id = ? ORDER BY a.id ASC", [selectaspek] ,async (error, results) => {
+                    Connection.query("SELECT s.id AS idsoal, s.soal AS soal, s.status AS statussoal, a.id AS idaspek, a.nama AS namaaspek, a.status AS statusaspek, p.id AS idpart, p.nama AS namapart, p.status AS statuspart FROM t_soal s, t_aspek a, t_part p WHERE s.idaspek = a.id AND s.idpart = p.id AND s.idaspek = ?", [selectaspek] ,async (error, results) => {
                         if(error) {
                             /** Kirim error */
                             res.status(500).json({
                                 message: error
                             })
                         } else if(results.length >= 0){
-                            Connection.query("SELECT * FROM t_aspek", async (error, resultaspek) => {
+                            Connection.query("SELECT a.id AS idaspek, a.nama AS namaaspek, a.status AS statusaspek, p.id AS idpart, p.nama AS namapart, p.status AS statuspart FROM t_aspek a, t_part p WHERE a.idpart = p.id AND NOT a.status = 'hapus' AND NOT p.status = 'hapus' ORDER BY a.nama ASC ", async (error, resultaspek) => {
                                 if(error){
                                     /** Kirim error */
                                     res.status(500).json({
@@ -790,5 +790,28 @@ Router.post('/listpertanyaan', (req, res) =>{
         })
     }
 });
+
+/** Route for hasil assessment */
+Router.post('/hasilassessment', (req, res) =>{
+    try{
+        const {selectacara} = req.body;
+
+        if(selectacara){
+
+            
+
+        } else {
+            /** Kirim error */
+            res.status(500).json({
+                message: "Field tidak boleh kosong"
+            })
+        }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+})
 
 module.exports = Router;

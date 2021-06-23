@@ -33,7 +33,7 @@ app.use('/acara', require('./routes/acara'));
 app.use('/partisipant', require('./routes/partisipant'));
 app.use('/part', require('./routes/part'));
 app.use('/aspek', require('./routes/aspek'));
-// app.use('/soal', require('./routes/soal'));
+app.use('/soal', require('./routes/soal'));
 app.use('/assessment', require('./routes/assessment'));
 // app.use('/jawab', require('./routes/jawab'));
 
