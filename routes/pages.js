@@ -1356,13 +1356,7 @@ Router.post('/kesimpulanassessmentmahasiswa', (req, res) =>{
     }
 })
 
-
-
-
-
-
-
-/** Route for hasil assessment */
+/** Route for hasil assessment prodi */
 Router.post('/hasilassessmentprodi', (req, res) =>{
     try{
         const {selectacara} = req.body;
@@ -1375,8 +1369,8 @@ Router.post('/hasilassessmentprodi', (req, res) =>{
                         message: error
                     })
                 } else if(acaraterpilih.length > 0) {
-                    /** get data mahasiswa */
-                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi", [selectacara], async (error, resultcekprodi) => {
+                    /** get data prodi */
+                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? AND view_total_skor_mhs_acara.prodi NOT IN (SELECT prodi FROM t_kesimpulan_prodi WHERE idacara = ? AND NOT status = 'hapus') GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi", [selectacara, selectacara], async (error, resultcekprodi) => {
                         if(error) {
                             /** send error */
                             res.status(500).json({
@@ -1627,5 +1621,289 @@ Router.post('/hasilassessmentprogramstudi', (req, res) =>{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+/** Route for kesimpulan assessment */
+Router.post('/kesimpulanassessmentprodi', (req, res) =>{
+    try{
+        const {selectacara} = req.body;
+
+        if(selectacara){
+            Connection.query("SELECT * FROM t_acara WHERE status = 'aktif' AND id = ?", [selectacara], async (error, acaraterpilih) => {
+                if(error){
+                    /** send error */
+                    res.status(500).json({
+                        message: error
+                    })
+                } else if(acaraterpilih.length > 0) {
+                    /** get data prodi */
+                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? AND view_total_skor_mhs_acara.prodi IN (SELECT prodi FROM t_kesimpulan_prodi WHERE idacara = ? AND NOT status = 'hapus') GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi", [selectacara, selectacara], async (error, resultcekprodi) => {
+                        if(error) {
+                            /** send error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(resultcekprodi.length > 0){
+                            Connection.query("SELECT t_acara.id AS idacara, t_acara.nama AS namaacara FROM t_acara WHERE status = 'aktif' ORDER BY id ASC", async (error, dataacara) =>{
+                                if(error) {
+                                    /** send error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if(dataacara.length >= 0) {
+                                    /** send data */
+                                    res.status(200).json({
+                                        resultcekprodi,
+                                        dataacara,
+                                        selectacara
+                                    })
+                                } else {
+                                    /** send error */
+                                    res.status(403).json({
+                                        message: 'Error, please contact developer'
+                                    })
+                                }
+                            })
+                        } else if(resultcekprodi.length == 0) {
+                            /** send error */
+                            res.status(403).json({
+                                message: 'Belum ada prodi yang diberikan kesimpulan'
+                            })
+                        } else {
+                            /** send error */
+                            res.status(403).json({
+                                message: 'Error, please contact developer'
+                            })
+                        }
+                    })
+                } else if(acaraterpilih.length == 0) {
+                    /** send error */
+                    res.status(403).json({
+                        message: 'Acara tidak terdaftar'
+                    })
+                } else {
+                    /** send error */
+                    res.status(403).json({
+                        message: 'Error, please contact developer'
+                    })
+                }
+            })
+        } else {
+            /** Kirim error */
+            res.status(500).json({
+                message: "Field tidak boleh kosong"
+            })
+        }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+})
+
+/** Route for kesimpulan assessment */
+Router.post('/kesimpulanassessmentprogramstudi', (req, res) =>{
+    try{
+        const {selectacara, selectprodi} = req.body;
+
+        if(selectacara && selectprodi) {
+            /** cek acara */
+            Connection.query('SELECT id FROM t_acara WHERE id = ?',[selectacara], async (error, cekacara) => {
+                if(error) {
+                    /** Kirim error */
+                    res.status(500).json({
+                        message: error
+                    })
+                } else if(cekacara.length == 0) {
+                    /** Acara tidak terdaftar */
+                    res.status(403).json({
+                        message: "Acara tidak terdaftar"
+                    })
+                } else if(cekacara.length > 0) {
+                    /** cek prodi */
+                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? AND view_total_skor_mhs_acara.prodi = ? GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi", [selectacara, selectprodi], async (error, cekprodi) => {
+                        if(error) {
+                            /** Kirim error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(cekprodi.length == 0) {
+                            /** Acara tidak terdaftar */
+                            res.status(403).json({
+                                message: "prodi tidak terdaftar"
+                            })
+                        } else if(cekprodi.length > 0) {
+                            /** get data hasil assessment prodi part1 */
+                            Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi, view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek, ROUND(AVG(view_total_skor_mhs_acara.skor), 2) as skor FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.prodi = ? AND view_total_skor_mhs_acara.idpart = 1 AND view_total_skor_mhs_acara.idacara = ? GROUP BY view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek", [selectprodi, selectacara], async (error, part1) => {
+                                if(error) {
+                                    /** Kirim error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if(part1.length >= 0) {
+                                    /** get data hasil assessment prodi part2 */
+                                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi, view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek, ROUND(AVG(view_total_skor_mhs_acara.skor), 2) as skor FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.prodi = ? AND view_total_skor_mhs_acara.idpart = 2 AND view_total_skor_mhs_acara.idacara = ? GROUP BY view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek", [selectprodi, selectacara], async (error, part2) => {
+                                        if(error) {
+                                            /** Kirim error */
+                                            res.status(500).json({
+                                                message: error
+                                            })
+                                        } else if(part2.length >= 0) {
+                                            /** get data hasil assessment prodi part3 */
+                                            Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi, view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek, ROUND(AVG(view_total_skor_mhs_acara.skor), 2) as skor FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.prodi = ? AND view_total_skor_mhs_acara.idpart = 3 AND view_total_skor_mhs_acara.idacara = ? GROUP BY view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek", [selectprodi, selectacara], async (error, part3) => {
+                                                if(error) {
+                                                    /** Kirim error */
+                                                    res.status(500).json({
+                                                        message: error
+                                                    })
+                                                } else if(part3.length >= 0) {
+                                                    /** get data hasil assessment prodi part4 */
+                                                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi, view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek, ROUND(AVG(view_total_skor_mhs_acara.skor), 2) as skor FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.prodi = ? AND view_total_skor_mhs_acara.idpart = 4 AND view_total_skor_mhs_acara.idacara = ? GROUP BY view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek", [selectprodi, selectacara], async (error, part4) => {
+                                                        if(error){
+                                                            /** Kirim error */
+                                                            res.status(500).json({
+                                                                message: error
+                                                            })
+                                                        } else if(part4.length >= 0) {
+                                                            /** get data hasil assessment prodi part5 */
+                                                            Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi, view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek, ROUND(AVG(view_total_skor_mhs_acara.skor), 2) as skor FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.prodi = ? AND view_total_skor_mhs_acara.idpart = 5 AND view_total_skor_mhs_acara.idacara = ? GROUP BY view_total_skor_mhs_acara.part, view_total_skor_mhs_acara.aspek", [selectprodi, selectacara], async (error, part5) => {
+                                                                if(error){
+                                                                    /** Kirim error */
+                                                                    res.status(500).json({
+                                                                        message: error
+                                                                    })
+                                                                } else if(part5.length >= 0){
+                                                                    /** get data acara */
+                                                                    Connection.query("SELECT t_acara.id AS idacara, t_acara.nama AS namaacara FROM t_acara WHERE status = 'aktif' ORDER BY id ASC", async (error, dataacara) => {
+                                                                        if(error) {
+                                                                            /** Kirim error */
+                                                                            res.status(500).json({
+                                                                                message: error
+                                                                            })
+                                                                        } else if(dataacara.length >= 0) {
+                                                                            /** get data prodi yang mahasiswanya sudah menjawab */
+                                                                            Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? AND view_total_skor_mhs_acara.prodi IN (SELECT prodi FROM t_kesimpulan_prodi WHERE status = 'aktif') GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi", [selectacara], async (error, resultcekprodi) => {
+                                                                                if(error) {
+                                                                                    /** Kirim error */
+                                                                                    res.status(500).json({
+                                                                                        message: error
+                                                                                    })
+                                                                                } else if(resultcekprodi.length >= 0) {
+                                                                                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? AND view_total_skor_mhs_acara.prodi = ? GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi", [selectacara, selectprodi], async (error, dataprodi) => {
+                                                                                        if(error) {
+                                                                                            /** Kirim error */
+                                                                                            res.status(500).json({
+                                                                                                message: error
+                                                                                            })
+                                                                                        } else if(dataprodi.length >= 0) {
+                                                                                            /** Ambil data kesimpulan */
+                                                                                            Connection.query("SELECT u.id AS idpsikolog, u.unama AS namapsikolog, k.id AS idkesimpulan, k.kesimpulan AS kesimpulan FROM t_kesimpulan_prodi k INNER JOIN t_acara a ON a.id = k.idacara INNER JOIN t_user u ON u.id = k.idpsikolog WHERE k.idacara = ? AND k.prodi = ? AND NOT k.status = 'hapus'", [selectacara, selectprodi], async (error, datakesimpulan) => {
+                                                                                                if(error) {
+                                                                                                    /** Kirim error */
+                                                                                                    res.status(500).json({
+                                                                                                        message: error
+                                                                                                    })
+                                                                                                } else {
+                                                                                                    /** kirim data */
+                                                                                                    res.status(200).json({
+                                                                                                        part1, part2, part3, part4, part5,
+                                                                                                        selectacara, dataacara, resultcekprodi, selectprodi, dataprodi, datakesimpulan
+                                                                                                    })
+                                                                                                }
+                                                                                            })
+                                                                                        } else {
+                                                                                            /** Kirim error */
+                                                                                            res.status(403).json({
+                                                                                                message: "Error, please contact developer"
+                                                                                            })
+                                                                                        }
+                                                                                    })
+                                                                                } else {
+                                                                                    /** Kirim error */
+                                                                                    res.status(403).json({
+                                                                                        message: "Error, please contact developer"
+                                                                                    })
+                                                                                }
+                                                                            })
+                                                                        } else {
+                                                                            /** Kirim error */
+                                                                            res.status(403).json({
+                                                                                message: "Error, please contact developer"
+                                                                            })   
+                                                                        }
+                                                                    })
+                                                                } else {
+                                                                    /** Kirim error */
+                                                                    res.status(403).json({
+                                                                        message: "Error, please contact developer"
+                                                                    })
+                                                                }
+                                                            })
+                                                        } else {
+                                                            /** Kirim error */
+                                                            res.status(403).json({
+                                                                message: "Error, please contact developer"
+                                                            })
+                                                        }
+                                                    })
+                                                } else {
+                                                    /** Kirim error */
+                                                    res.status(403).json({
+                                                        message: "Error, please contact developer"
+                                                    })
+                                                }
+                                            })
+                                        } else {
+                                            /** Kirim error */
+                                            res.status(403).json({
+                                                message: "Error, please contact developer"
+                                            })
+                                        }
+                                    })
+                                } else {
+                                    /** Kirim error */
+                                    res.status(403).json({
+                                        message: "Error, please contact developer"
+                                    })
+                                }
+                            })
+                        } else {
+                            /** Kirim error */
+                            res.status(403).json({
+                                message: "Error, please contact developer"
+                            })
+                        }
+                    })
+                } else {
+                    /** Kirim error */
+                    res.status(403).json({
+                        message: "Error, please contact developer"
+                    })
+                }
+            })
+        } else {
+            /** Kirim error */
+            res.status(500).json({
+                message: "Field tidak boleh kosong"
+            })
+        }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+})
 
 module.exports = Router;
