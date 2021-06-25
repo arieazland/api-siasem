@@ -1163,6 +1163,85 @@ Router.post('/kesimpulanassessment', (req, res) =>{
 })
 
 /** Route for kesimpulan assessment */
+Router.post('/kesimpulanassessmenthapus', (req, res) =>{
+    try{
+        const {selectacara} = req.body;
+
+        if(selectacara){
+            Connection.query("SELECT * FROM t_acara WHERE status = 'aktif' AND id = ?", [selectacara], async (error, acaraterpilih) => {
+                if(error){
+                    /** send error */
+                    res.status(500).json({
+                        message: error
+                    })
+                } else if(acaraterpilih.length > 0) {
+                    /** get data mahasiswa */
+                    Connection.query("SELECT u.id AS idmahasiswa, u.unim AS nim, u.unama AS namamahasiswa, u.ufakultas AS fakultas, u.uprodi AS prodi FROM t_user u INNER JOIN t_answer a ON a.iduser = u.id INNER JOIN t_acara c ON c.id = a.idacara WHERE u.id IN (SELECT idmahasiswa FROM t_kesimpulan WHERE NOT status = 'hapus') AND u.utipe = 'mahasiswa' AND a.idacara = ? GROUP BY u.id ORDER BY u.unama", [selectacara], async (error, resultcekmahasiswa) => {
+                        if(error) {
+                            /** send error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(resultcekmahasiswa.length >= 0){
+                            Connection.query("SELECT t_acara.id AS idacara, t_acara.nama AS namaacara FROM t_acara WHERE status = 'aktif' ORDER BY id ASC", async (error, dataacara) =>{
+                                if(error) {
+                                    /** send error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if(dataacara.length >= 0) {
+                                    /** send data */
+                                    res.status(200).json({
+                                        resultcekmahasiswa,
+                                        dataacara,
+                                        selectacara
+                                    })
+                                } else {
+                                    /** send error */
+                                    res.status(403).json({
+                                        message: 'Error, please contact developer'
+                                    })
+                                }
+                            })
+                        // } else if(resultcekmahasiswa.length == 0) {
+                        //     /** send error */
+                        //     res.status(403).json({
+                        //         message: 'Belum ada mahasiswa yang diberikan kesimpulan'
+                        //     })
+                        } else {
+                            /** send error */
+                            res.status(403).json({
+                                message: 'Error, please contact developer'
+                            })
+                        }
+                    })
+                } else if(acaraterpilih.length == 0) {
+                    /** send error */
+                    res.status(403).json({
+                        message: 'Acara tidak terdaftar'
+                    })
+                } else {
+                    /** send error */
+                    res.status(403).json({
+                        message: 'Error, please contact developer'
+                    })
+                }
+            })
+        } else {
+            /** Kirim error */
+            res.status(500).json({
+                message: "Field tidak boleh kosong"
+            })
+        }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+})
+
+/** Route for kesimpulan assessment */
 Router.post('/kesimpulanassessmentmahasiswa', (req, res) =>{
     try{
         const {selectacara, selectmahasiswa} = req.body;
@@ -1619,20 +1698,6 @@ Router.post('/hasilassessmentprogramstudi', (req, res) =>{
     }
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /** Route for kesimpulan assessment */
 Router.post('/kesimpulanassessmentprodi', (req, res) =>{
     try{
@@ -1679,6 +1744,85 @@ Router.post('/kesimpulanassessmentprodi', (req, res) =>{
                             res.status(403).json({
                                 message: 'Belum ada prodi yang diberikan kesimpulan'
                             })
+                        } else {
+                            /** send error */
+                            res.status(403).json({
+                                message: 'Error, please contact developer'
+                            })
+                        }
+                    })
+                } else if(acaraterpilih.length == 0) {
+                    /** send error */
+                    res.status(403).json({
+                        message: 'Acara tidak terdaftar'
+                    })
+                } else {
+                    /** send error */
+                    res.status(403).json({
+                        message: 'Error, please contact developer'
+                    })
+                }
+            })
+        } else {
+            /** Kirim error */
+            res.status(500).json({
+                message: "Field tidak boleh kosong"
+            })
+        }
+    } catch(error) {
+        /** Kirim error */
+        res.status(500).json({
+            message: error
+        })
+    }
+})
+
+/** Route for kesimpulan assessment */
+Router.post('/kesimpulanassessmentprodihapus', (req, res) =>{
+    try{
+        const {selectacara} = req.body;
+
+        if(selectacara){
+            Connection.query("SELECT * FROM t_acara WHERE status = 'aktif' AND id = ?", [selectacara], async (error, acaraterpilih) => {
+                if(error){
+                    /** send error */
+                    res.status(500).json({
+                        message: error
+                    })
+                } else if(acaraterpilih.length > 0) {
+                    /** get data prodi */
+                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? AND view_total_skor_mhs_acara.prodi IN (SELECT prodi FROM t_kesimpulan_prodi WHERE idacara = ? AND NOT status = 'hapus') GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi", [selectacara, selectacara], async (error, resultcekprodi) => {
+                        if(error) {
+                            /** send error */
+                            res.status(500).json({
+                                message: error
+                            })
+                        } else if(resultcekprodi.length >= 0){
+                            Connection.query("SELECT t_acara.id AS idacara, t_acara.nama AS namaacara FROM t_acara WHERE status = 'aktif' ORDER BY id ASC", async (error, dataacara) =>{
+                                if(error) {
+                                    /** send error */
+                                    res.status(500).json({
+                                        message: error
+                                    })
+                                } else if(dataacara.length >= 0) {
+                                    /** send data */
+                                    res.status(200).json({
+                                        resultcekprodi,
+                                        dataacara,
+                                        selectacara
+                                    })
+                                } else {
+                                    /** send error */
+                                    res.status(403).json({
+                                        message: 'Error, please contact developer'
+                                    })
+                                }
+                            })
+                        // } else if(resultcekprodi.length == 0) {
+                        //     /** send error */
+                        //     res.status(403).json({
+                        //         message: 'Belum ada prodi yang diberikan kesimpulan'
+                        //     })
                         } else {
                             /** send error */
                             res.status(403).json({

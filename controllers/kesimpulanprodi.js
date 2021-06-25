@@ -111,11 +111,11 @@ exports.regConc = async (req, res) => {
 /** Edit Kesimpulan Process */
 exports.editConc = async (req, res) => {
     try{
-        const { idkesimpulan, idacara, idmahasiswa, idpsikolog, kesimpulan } = req.body
+        const { idkesimpulan, idacara, idprodi, idpsikolog, kesimpulan } = req.body
         var tanggal = Moment().format("YYYY-MM-DD");
         var waktu = Moment().format("HH:mm:ss");
 
-        if(idkesimpulan && idacara && idmahasiswa && idpsikolog && kesimpulan){
+        if(idkesimpulan && idacara && idprodi && idpsikolog && kesimpulan){
             /** cek acara */
             Connection.query("SELECT id FROM t_acara WHERE id = ?",[idacara], async (error, cekacara) => {
                 if(error) {
@@ -129,19 +129,19 @@ exports.editConc = async (req, res) => {
                         message: "Acara tidak terdaftar"
                     });
                 } else if(cekacara.length > 0) {
-                    /** cek mahasiswa */
-                    Connection.query("SELECT id FROM t_user WHERE id = ? AND utipe = 'mahasiswa'",[idmahasiswa], async (error, cekmahasiswa) => {
+                    /** cek prodi */
+                    Connection.query("SELECT view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi FROM view_total_skor_mhs_acara WHERE view_total_skor_mhs_acara.idacara = ? AND view_total_skor_mhs_acara.prodi IN (SELECT prodi FROM t_kesimpulan_prodi WHERE status = 'aktif') GROUP BY view_total_skor_mhs_acara.fakultas, view_total_skor_mhs_acara.prodi",[idacara], async (error, cekprodi) => {
                         if(error) {
                             /** send error */
                             res.status(500).json({
                                 message: error
                             });
-                        } else if(cekmahasiswa.length == 0){
+                        } else if(cekprodi.length == 0){
                             /** send error */
                             res.status(403).json({
-                                message: "Mahasiswa tidak terdaftar"
+                                message: "Prodi tidak terdaftar"
                             });
-                        } else if(cekmahasiswa.length > 0) {
+                        } else if(cekprodi.length > 0) {
                             /** cek psikolog */
                             Connection.query("SELECT id FROM t_user WHERE id = ? AND NOT utipe = 'mahasiswa' AND NOT utipe = 'nonaktif'",[idpsikolog], async (error, cekpsikolog) => {
                                 if(error) {
@@ -156,7 +156,7 @@ exports.editConc = async (req, res) => {
                                     });
                                 } else if(cekpsikolog.length > 0) {
                                     /** cek apakah kesimpulan sudah ada */
-                                    Connection.query(" SELECT id FROM t_kesimpulan WHERE idacara = ? AND idmahasiswa = ? AND NOT status = 'hapus' AND id = ?", [idacara, idmahasiswa, idkesimpulan], async (error, cekkesimpulan) => {
+                                    Connection.query(" SELECT id FROM t_kesimpulan_prodi WHERE idacara = ? AND prodi = ? AND NOT status = 'hapus' AND id = ?", [idacara, idprodi, idkesimpulan], async (error, cekkesimpulan) => {
                                         if(error) {
                                             /** send error */
                                             res.status(500).json({
@@ -169,7 +169,7 @@ exports.editConc = async (req, res) => {
                                             });
                                         } else if(cekkesimpulan.length > 0) {
                                             /** peroses insert kesimpulan */
-                                            Connection.query("UPDATE t_kesimpulan set ? WHERE id = ?",[{idacara: idacara, idpsikolog: idpsikolog, idmahasiswa: idmahasiswa, kesimpulan: kesimpulan, status: 'aktif', date_updated: tanggal, time_updated: waktu}, idkesimpulan], async (error, editkesimpulan) => {
+                                            Connection.query("UPDATE t_kesimpulan_prodi set ? WHERE id = ?",[{idpsikolog: idpsikolog, kesimpulan: kesimpulan, status: 'aktif', date_updated: tanggal, time_updated: waktu}, idkesimpulan], async (error, editkesimpulan) => {
                                                 if(error) {
                                                     /** send error */
                                                     res.status(500).json({
@@ -180,7 +180,7 @@ exports.editConc = async (req, res) => {
                                                     res.status(201).json({
                                                         message: "Kesimpulan berhasil di ubah",
                                                         idacara,
-                                                        idmahasiswa
+                                                        idprodi
                                                     });
                                                 }
                                             })
@@ -230,11 +230,11 @@ exports.editConc = async (req, res) => {
 /** Hapus Kesimpulan Process */
 exports.deleteConc = async (req, res) => {
     try{
-        const { idkesimpulan, idacara, idmahasiswa } = req.body
+        const { idkesimpulan, idacara, idprodi } = req.body
         var tanggal = Moment().format("YYYY-MM-DD");
         var waktu = Moment().format("HH:mm:ss");
 
-        if(idkesimpulan && idacara && idmahasiswa){
+        if(idkesimpulan && idacara && idprodi){
             /** cek acara */
             Connection.query("SELECT id FROM t_acara WHERE id = ?",[idacara], async (error, cekacara) => {
                 if(error) {
@@ -248,51 +248,31 @@ exports.deleteConc = async (req, res) => {
                         message: "Acara tidak terdaftar"
                     });
                 } else if(cekacara.length > 0) {
-                    /** cek mahasiswa */
-                    Connection.query("SELECT id FROM t_user WHERE id = ? AND utipe = 'mahasiswa'",[idmahasiswa], async (error, cekmahasiswa) => {
+                    /** cek apakah kesimpulan ada */
+                    Connection.query(" SELECT id FROM t_kesimpulan_prodi WHERE idacara = ? AND prodi = ? AND NOT status = 'hapus' AND id = ?", [idacara, idprodi, idkesimpulan], async (error, cekkesimpulan) => {
                         if(error) {
                             /** send error */
                             res.status(500).json({
                                 message: error
                             });
-                        } else if(cekmahasiswa.length == 0){
+                        } else if(cekkesimpulan.length == 0) {
                             /** send error */
                             res.status(403).json({
-                                message: "Mahasiswa tidak terdaftar"
+                                message: "Data kesimpulan yang akan di hapus tidak ada"
                             });
-                        } else if(cekmahasiswa.length > 0) {
-                            /** cek apakah kesimpulan sudah ada */
-                            Connection.query(" SELECT id FROM t_kesimpulan WHERE idacara = ? AND idmahasiswa = ? AND NOT status = 'hapus' AND id = ?", [idacara, idmahasiswa, idkesimpulan], async (error, cekkesimpulan) => {
+                        } else if(cekkesimpulan.length > 0) {
+                            /** peroses insert kesimpulan */
+                            Connection.query("UPDATE t_kesimpulan_prodi set status = 'hapus' WHERE id = ?",[idkesimpulan], async (error, deletekesimpulan) => {
                                 if(error) {
                                     /** send error */
                                     res.status(500).json({
                                         message: error
                                     });
-                                } else if(cekkesimpulan.length == 0) {
-                                    /** send error */
-                                    res.status(403).json({
-                                        message: "Data kesimpulan yang akan di hapus tidak ada"
-                                    });
-                                } else if(cekkesimpulan.length > 0) {
-                                    /** peroses insert kesimpulan */
-                                    Connection.query("UPDATE t_kesimpulan set status = 'hapus' WHERE id = ?",[idkesimpulan], async (error, deletekesimpulan) => {
-                                        if(error) {
-                                            /** send error */
-                                            res.status(500).json({
-                                                message: error
-                                            });
-                                        } else {
-                                            /** sukses insert */
-                                            res.status(201).json({
-                                                message: "Kesimpulan berhasil di hapus",
-                                                idacara
-                                            });
-                                        }
-                                    })
                                 } else {
-                                    /** send error */
-                                    res.status(403).json({
-                                        message: "Error, please contact developer"
+                                    /** sukses insert */
+                                    res.status(201).json({
+                                        message: "Kesimpulan berhasil di hapus",
+                                        idacara
                                     });
                                 }
                             })
