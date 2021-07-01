@@ -2078,10 +2078,6 @@ Router.post('/skorassessment', (req, res) =>{
                         message: "Acara tidak terdaftar"
                     })
                 } else if(cekacara.length > 0) {
-                    
-
-
-
                             /** get data hasil assessment mahasiswa part1 */
                             Connection.query("SELECT unim, sum(IF(idsoal = '1', jawab, 0)) AS '1', sum(IF(idsoal = '2', jawab, 0)) AS '2', sum(IF(idsoal = '3', jawab, 0)) AS '3', sum(IF(idsoal = '4', jawab, 0)) AS '4', sum(IF(idsoal = '5', jawab, 0)) AS '5', sum(IF(idsoal = '6', jawab, 0)) AS '6', sum(IF(idsoal = '7', jawab, 0)) AS '7', sum(IF(idsoal = '8', jawab, 0)) AS '8', sum(IF(idsoal = '9', jawab, 0)) AS '9', sum(IF(idsoal = '10', jawab, 0)) AS '10', sum(IF(idsoal = '11', jawab, 0)) AS '11', sum(IF(idsoal = '12', jawab, 0)) AS '12', sum(IF(idsoal = '13', jawab, 0)) AS '13', sum(IF(idsoal = '14', jawab, 0)) AS '14', sum(IF(idsoal = '15', jawab, 0)) AS '15', sum(IF(idsoal = '16', jawab, 0)) AS '16', sum(IF(idsoal = '17', jawab, 0)) AS '17', sum(IF(idsoal = '18', jawab, 0)) AS '18', sum(IF(idsoal = '19', jawab, 0)) AS '19', sum(IF(idsoal = '20', jawab, 0)) AS '20', sum(IF(idsoal = '21', jawab, 0)) AS '21', sum(IF(idsoal = '22', jawab, 0)) AS '22', sum(IF(idsoal = '23', jawab, 0)) AS '23', sum(IF(idsoal = '24', jawab, 0)) AS '24', sum(IF(idsoal = '25', jawab, 0)) AS '25', sum(IF(idsoal = '26', jawab, 0)) AS '26', sum(IF(idsoal = '27', jawab, 0)) AS '27', sum(IF(idsoal = '28', jawab, 0)) AS '28', sum(IF(idsoal = '29', jawab, 0)) AS '29', sum(IF(idsoal = '30', jawab, 0)) AS '30', sum(IF(idsoal < 30, jawab, 0)) AS Jumlah FROM t_answer JOIN t_user ON t_answer.iduser = t_user.id WHERE t_answer.idacara = ? GROUP BY iduser", [selectacara], async (error, part1) => {
                                 if(error) {
@@ -2177,11 +2173,6 @@ Router.post('/skorassessment', (req, res) =>{
                                     })
                                 }
                             })
-
-
-
-
-
                 } else {
                     /** Kirim error */
                     res.status(403).json({
