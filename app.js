@@ -38,7 +38,7 @@ app.use('/assessment', require('./routes/assessment'));
 app.use('/kesimpulan', require('./routes/kesimpulan'));
 app.use('/kesimpulanprodi', require('./routes/kesimpulanprodi'));
 
-let port = process.env.DB_PORT || 8080;
+let port = 8081;
 app.listen(port, () => {
     console.log(`Server running on port: ${port}`);
 });
