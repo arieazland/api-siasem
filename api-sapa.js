@@ -3,8 +3,8 @@ const Mysql = require("mysql");
 const Bcrypt = require("bcrypt");
 const Path = require("path");
 const Dotenv = require("dotenv");
+Dotenv.config({ path: './.env' });
 
-// Set Moment Format engine
 const Moment = require("moment");
 require("moment/locale/id");  // without this line it didn't work
 Moment.locale('id');
@@ -17,9 +17,6 @@ app.use(session({
     resave: true,
     saveUninitialized: true
 }));
-
-// Dotenv.config({ path: './.env' });
-// const Connection = require ("./DBConnection");
 
 // Parse URL-encoded bodies (as sent by HTML Forms)
 app.use(Express.urlencoded({ extended: false }));
@@ -38,7 +35,7 @@ app.use('/assessment', require('./routes/assessment'));
 app.use('/kesimpulan', require('./routes/kesimpulan'));
 app.use('/kesimpulanprodi', require('./routes/kesimpulanprodi'));
 
-let port = 8081;
+let port = process.env.PORT || 8091;
 app.listen(port, () => {
     console.log(`Server running on port: ${port}`);
 });

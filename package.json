@@ -1,11 +1,11 @@
 {
-  "name": "api-siasem",
+  "name": "api-sapa",
   "version": "1.0.0",
   "description": "**Contributors**  :  1. M. Ridwan Zalbina 2. Firly",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
+    "start": "nodemon api-sapa.js"
   },
   "repository": {
     "type": "git",
