@@ -75,10 +75,12 @@ exports.regPartisipant = async (req, res) => {
                                 Connection.query(sqlinsert, [valueinsert], async (error, result) => {
                                     if(error) {
                                         /** Send error */
+                                        console.log("error inser")
                                         res.status(500).json({
                                             message: "Error insert partisipan",
                                         });
                                     } else {
+                                        console.log("berhasil insert")
                                         res.status(201).json({
                                             message: "User berhasil di daftarkan",
                                             idacara
