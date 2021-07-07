@@ -75,7 +75,7 @@ exports.regPartisipant = async (req, res) => {
                                 }
                                 if(insertpartisipant){
                                     console.log("berhasil insert")
-                                    console.log(insertpartisipant)
+                                    console.log(insertpartisipant.sql)
                                     res.status(201).json({
                                         message: "User berhasil di daftarkan",
                                         idacara
