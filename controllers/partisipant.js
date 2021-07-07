@@ -72,10 +72,11 @@ exports.regPartisipant = async (req, res) => {
                                 for( var k = 0; k < iduser.length; k++){
                                     valueinsert.push([null, iduser[k], idacara, tanggal, waktu]);
                                 }
-                                Connection.query(sqlinsert, [valueinsert], async (error, result) => {
+                                var cek = Connection.query(sqlinsert, [valueinsert], async (error, result) => {
                                     if(error) {
                                         /** Send error */
                                         console.log("error inser")
+                                        console.log(cek)
                                         res.status(500).json({
                                             message: "Error insert partisipan",
                                         });
