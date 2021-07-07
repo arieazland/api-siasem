@@ -52,13 +52,9 @@ exports.regPartisipant = async (req, res) => {
                             /** Cek iduser apakah sudah terdaftar di partisipant */
                             var sqlpartisipant = "SELECT iduser FROM t_partisipant WHERE idacara = ? AND iduser IN (?)";
                             var valuepartisipant = [];
-                            var cekuser = null
-                            var resultscekuser = null
                             for( var j = 0; j < iduser.length; j++){
                                 valuepartisipant.push([iduser[j]]);
                             }
-                            console.log(cekuser)
-                            console.log(resultscekuser)
                             var cek = Connection.query(sqlpartisipant, [idacara, valuepartisipant], async (error, resultscekuser) => {
                             if(error) {
                                 /** Send error */
