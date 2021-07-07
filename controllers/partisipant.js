@@ -55,7 +55,7 @@ exports.regPartisipant = async (req, res) => {
                             for( var j = 0; j < iduser.length; j++){
                                 valuepartisipant.push([iduser[j]]);
                             }
-                            var cek = Connection.query(sqlpartisipant, [idacara, valuepartisipant], async (error, resultscekuser) => {
+                            Connection.query(sqlpartisipant, [idacara, valuepartisipant], async (error, resultscekuser) => {
                             if(error) {
                                 /** Send error */
                                 res.status(500).json({
@@ -90,7 +90,6 @@ exports.regPartisipant = async (req, res) => {
                                 });
                             }
                             })
-                            console.log(cek)
                         } else {
                             /** Send error */
                             res.status(500).json({
