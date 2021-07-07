@@ -24,12 +24,11 @@ exports.regPartisipant = async (req, res) => {
             for( var i = 0; i < iduser.length; i++){
                 valueuser.push([iduser[i]]);
             }
-            console.log("resultsiduser")
             Connection.query(sqluser, [valueuser], async (error, resultsiduser) => {
                 if(error) {
                     /** Send error */
                     res.status(500).json({
-                        message: "Error resultsiduser",
+                        message: error,
                     });
                 } else if(resultsiduser.length == 0) {
                     /** User tidak terdaftar */
@@ -38,7 +37,6 @@ exports.regPartisipant = async (req, res) => {
                     });
                 } else if(resultsiduser.length > 0) {
                     /** cek data acara */
-                    console.log("resultsidacara")
                     Connection.query('SELECT id FROM t_acara WHERE id = ?', idacara, async (error, resultsidacara) => {
                         if(error) {
                             /** Send error */
@@ -52,7 +50,6 @@ exports.regPartisipant = async (req, res) => {
                             });
                         } else if (resultsidacara.length > 0) {
                             /** Cek iduser apakah sudah terdaftar di partisipant */
-                            console.log("resultscekuser")
                             var sqlpartisipant = "SELECT iduser FROM t_partisipant WHERE idacara = ? AND iduser IN (?)";
                             var valuepartisipant = [];
                             for( var j = 0; j < iduser.length; j++){
@@ -62,11 +59,10 @@ exports.regPartisipant = async (req, res) => {
                             if(error) {
                                 /** Send error */
                                 res.status(500).json({
-                                    message: "Error resultcekuser",
+                                    message: error,
                                 });
                             } else if(resultscekuser.length == 0) {
                                 /** Proses insert data user dan acara ke partisipant */
-                                console.log("insert")
                                 //var sqlinsert = "INSERT INTO t_partisipant (id, iduser, idacara, date_created, time_created) VALUES ?";
                                 //var valueinsert = [];
                                 for( var k = 0; k < iduser.length; k++){
@@ -74,35 +70,15 @@ exports.regPartisipant = async (req, res) => {
                                     var insertpartisipant = Connection.query("INSERT INTO t_partisipant SET ?", [{id: null, iduser: iduser[k], idacara: idacara, date_created: tanggal, time_created: waktu}], async(error, results)=>{})
                                 }
                                 if(insertpartisipant){
-                                    console.log("berhasil insert")
-                                    console.log(insertpartisipant.sql)
                                     res.status(201).json({
                                         message: "User berhasil di daftarkan",
                                         idacara
                                     });
                                 } else {
-                                    console.log("error inser")
-                                    console.log(insertpartisipant)
                                     res.status(500).json({
-                                        message: "Error insert partisipan",
+                                        message: "User Gagal di daftarkan",
                                     });
                                 }
-                                // var cek = Connection.query(sqlinsert, [valueinsert], async (error, result) => {
-                                //     if(error) {
-                                //         /** Send error */
-                                //         console.log("error inser")
-                                //         console.log(cek)
-                                //         res.status(500).json({
-                                //             message: "Error insert partisipan",
-                                //         });
-                                //     } else {
-                                //         console.log("berhasil insert")
-                                //         res.status(201).json({
-                                //             message: "User berhasil di daftarkan",
-                                //             idacara
-                                //         });
-                                //     }
-                                // });
                             } else if(resultscekuser.length > 0) {
                                 /** Acara tidak terdaftar */
                                 res.status(403).json({
@@ -135,7 +111,7 @@ exports.regPartisipant = async (req, res) => {
     } catch(error) {
         /** Send error */
         res.status(500).json({
-            message: "Error cartch",
+            message: error,
         });
     }
 }

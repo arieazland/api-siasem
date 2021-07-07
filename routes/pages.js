@@ -107,7 +107,7 @@ Router.post('/partisipant', (req, res) =>{
                 if(error) {
                     /** Kirim error */
                     res.status(500).json({
-                        message: "Error resultsidacara"
+                        message: error
                     })
                 } else if(resultsidacara.length == 0) {
                     /** Kirim error */
@@ -119,28 +119,28 @@ Router.post('/partisipant', (req, res) =>{
                         if(error) {
                             /** Kirim error */
                             res.status(500).json({
-                                message: "error resutls"
+                                message: error
                             })
                         } else if(results.length >= 0) {
                             Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' ORDER BY nama ASC", async (error, acara) => {
                                 if(error) {
                                     /** Kirim error */
                                     res.status(500).json({
-                                        message: "error acara"
+                                        message: error
                                     })
                                 } else {
                                     Connection.query('SELECT id, nama FROM t_acara WHERE id = ?', [selectacara], async (error, pilihacara) => {
                                         if(error) {
                                             /** Kirim error */
                                             res.status(500).json({
-                                                message: "error pilihacara"
+                                                message: error
                                             })
                                         } else {
                                             Connection.query('SELECT u.id, u.unama FROM t_user u WHERE u.utipe = ? AND u.id NOT IN (SELECT p.iduser FROM t_partisipant p WHERE p.idacara = ?)', ['psikolog', selectacara], async (error, psikolog) => {
                                                 if(error) {
                                                     /** Kirim error */
                                                     res.status(500).json({
-                                                        message: "error psikolog"
+                                                        message: error
                                                     })
                                                 } else {
                                                     /** Kirim data acara, psikolog dan partisipant */
@@ -160,14 +160,14 @@ Router.post('/partisipant', (req, res) =>{
                         } else {
                             /** Kirim error */
                             res.status(500).json({
-                                message: "error results bawah"
+                                message: "Error, please contact developer"
                             })
                         }
                     });
                 } else {
                     /** Kirim error */
                     res.status(500).json({
-                        message: "Error results id acara bawah"
+                        message: "Error, please contact developer"
                     })
                 }
             });
@@ -180,7 +180,7 @@ Router.post('/partisipant', (req, res) =>{
     } catch(error) {
         /** Kirim error */
         res.status(500).json({
-            message: "Error catch"
+            message: error
         })
     }
 });
