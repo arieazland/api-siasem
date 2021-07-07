@@ -71,7 +71,7 @@ exports.regPartisipant = async (req, res) => {
                                 //var valueinsert = [];
                                 for( var k = 0; k < iduser.length; k++){
                                     //valueinsert.push([null, iduser[k], idacara, tanggal, waktu]);
-                                    var insertpartisipant = Connection.query("INSERT INTO t_partisipant SET ?", [{id: null, iduser: iduser[k], idacara: idacara, date_created: tanggal, time_created: waktu}])
+                                    var insertpartisipant = Connection.query("INSERT INTO t_partisipant SET ?", [{id: null, iduser: iduser[k], idacara: idacara, date_created: tanggal, time_created: waktu}], async(error, results)=>{})
                                 }
                                 if(insertpartisipant){
                                     console.log("berhasil insert")
