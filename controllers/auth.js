@@ -373,3 +373,122 @@ exports.deleteUser = (req, res) => {
         });
     }
 };
+
+/** Reset Password Process */
+exports.resetPassword = (req, res) => {
+    try{
+        const { id, password, password2 } = req.body;
+
+        var tanggal = Moment().format("YYYY-MM-DD");
+        var waktu = Moment().format("HH:mm:ss");
+
+        if(id && password && password2){
+            if(password == password2){
+                Connection.query("SELECT * FROM t_user WHERE id = ?", [id], async(error, cekpeserta) => {
+                    if(error){
+                        res.status(500).json({
+                            message: error
+                        });
+                        console.log("error disni 1")
+                    } else if(cekpeserta.length == 0){
+                        /** Peserta tidak terdaftar */
+                        res.status(403).json({
+                            message: "Peserta tidak terdaftar",
+                        });
+                    } else if(cekpeserta.length > 0){
+                        let hashedPassword = await Bcrypt.hash(password, 8);
+                        Connection.query("UPDATE t_user SET ? WHERE id = ?", [{upass: hashedPassword}, id], async (error, results) => {
+                            if(error){
+                                res.status(500).json({
+                                    message: error
+                                });
+                                console.log("error disni 2")
+                            } else {
+                                res.status(200).json({
+                                    message: "Reset password berhasil, silahkan login"
+                                });
+                            }
+                        })
+                    } else {
+                        res.status(403).json({
+                            message: "Error, please contact developer"
+                        });
+                    }
+                })
+            } else {
+                /** Password dan konfirmasi password tidak sama */
+                res.status(403).json({
+                    message: "Password dan konfirmasi password tidak sama",
+                });
+            }
+        } else {
+            /** Field tidak boleh kosong */
+            res.status(403).json({
+                message: "Field tidak boleh kosong",
+            });
+        }
+    } catch(error){
+        res.status(500).json({
+            message: error
+        });
+    }
+};
+
+/** Admin Reset Password Process */
+exports.adminresetPassword = (req, res) => {
+    try{
+        const { id, password, password2 } = req.body;
+
+        var tanggal = Moment().format("YYYY-MM-DD");
+        var waktu = Moment().format("HH:mm:ss");
+
+        if(id && password && password2){
+            if(password == password2){
+                Connection.query("SELECT * FROM t_user WHERE id = ?", [id], async(error, cekpeserta) => {
+                    if(error){
+                        res.status(500).json({
+                            message: error
+                        });
+                        console.log("error disni 1")
+                    } else if(cekpeserta.length == 0){
+                        /** Peserta tidak terdaftar */
+                        res.status(403).json({
+                            message: "Peserta tidak terdaftar",
+                        });
+                    } else if(cekpeserta.length > 0){
+                        let hashedPassword = await Bcrypt.hash(password, 8);
+                        Connection.query("UPDATE t_user SET ? WHERE id = ?", [{upass: hashedPassword}, id], async (error, results) => {
+                            if(error){
+                                res.status(500).json({
+                                    message: error
+                                });
+                            } else {
+                                res.status(200).json({
+                                    message: "Reset password berhasil"
+                                });
+                            }
+                        })
+                    } else {
+                        res.status(403).json({
+                            message: "Error, please contact developer"
+                        });
+                    }
+                })
+            } else {
+                /** Password dan konfirmasi password tidak sama */
+                res.status(403).json({
+                    message: "Password dan konfirmasi password tidak sama",
+                });
+            }
+        } else {
+            /** Field tidak boleh kosong */
+            res.status(403).json({
+                message: "Field tidak boleh kosong",
+            });
+        }
+    } catch(error){
+        res.status(500).json({
+            message: error
+        });
+    }
+};

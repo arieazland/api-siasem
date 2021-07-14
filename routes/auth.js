@@ -9,5 +9,7 @@ Router.post('/regpsikolog', authController.regPsikolog);
 Router.post('/regmahasiswa', authController.regMahasiswa);
 Router.put('/edituser', authController.editUser);
 Router.put('/deleteuser', authController.deleteUser);
+Router.put('/resetpass', authController.resetPassword);
+Router.put('/adminresetpass', authController.adminresetPassword);
 
 module.exports = Router;
