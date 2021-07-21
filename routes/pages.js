@@ -389,7 +389,7 @@ Router.post('/listpertanyaan', (req, res) =>{
 
         if(selectacara && idu){
             /** Cek apakah user sudah ada jawaban di part 1 */
-            Connection.query('select t_user.unim, t_user.unama, t_part.id, t_part.nama from t_answer, t_part, t_soal, t_user where iduser = ? AND t_part.id = 1 AND t_answer.idsoal = t_soal.id AND t_soal.idpart = t_part.id AND t_user.id = t_answer.iduser GROUP BY t_part.id ', [idu] ,async (error, cekjawaban1) => {
+            Connection.query('select t_user.unim, t_user.unama, t_part.id, t_part.nama from t_answer, t_part, t_soal, t_user where iduser = ? AND t_part.id = 1 AND t_answer.idsoal = t_soal.id AND t_soal.idpart = t_part.id AND t_user.id = t_answer.iduser AND t_answer.idacara = ? GROUP BY t_part.id ', [idu] ,async (error, cekjawaban1) => {
                 if(error){
                     /** Kirim error */
                     res.status(500).json({
