@@ -165,3 +165,51 @@ exports.deleteAcara = async (req, res) => {
         });
     }
 }
+
+
+exports.deleteAcara_testdenganIman = async (req, res) => {
+        const { id } = req.body;
+        if(id){
+            try{
+                const data = await new Promise((resolve, reject) => {
+                    Connection.query('SELECT * FROM acara', (error, results) => {
+                        if(error) { 
+                            reject(error);
+                            // throw error;
+                            // res.status(500).json({
+                            //     message: error
+                            // });
+                        } else {
+                            resolve(results);
+                            /** Edit berhasil dilanjutkan ke acara */
+                            // res.status(201).json({
+                            //     message: "Data acara berhasil di hapus",
+                            // });
+                        }
+                    });
+                });
+
+                if (data.length === 0) {
+                    throw new Error('Data tidak ada');
+                } else if (data.length > 0) {
+                    res.status(201).json({ data });
+                    // try{
+                    //     await
+                    // } catch(e){
+
+                    // }
+                }
+                //else throw new Error('Error tidak diketahui.');
+                else {
+                    throw new Error('Error tidak diketahui.');
+                }
+            } catch (e) {
+                res.status(400).json({ message: e.message });
+            }
+        } else {
+            res.status(400).json({ message: 'Field kosong' });
+            // console.log("Field kosong")
+            // throw new Error('ID kosong.');
+        }
+    
+}
