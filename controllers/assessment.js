@@ -75,14 +75,13 @@ exports.registrasiJawaban = async (req, res) => {
                             value_cekjawaban.push([idsoal[i]]);
                         }
                         const cek_jawaban = await new Promise((resolve, reject) => {
-                            const query_cekjawaban =  Connection.query(sql_cekjawaban, [value_cekjawaban, iduser, idacara], (error,results) => {
+                            Connection.query(sql_cekjawaban, [value_cekjawaban, iduser, idacara], (error,results) => {
                                 if(error) { 
                                     reject(error);
                                 } else {
                                     resolve(results);
                                 }
                             });
-                            console.log(query_cekjawaban)
                         })
 
                         if(cek_jawaban.length === 0){
@@ -94,26 +93,23 @@ exports.registrasiJawaban = async (req, res) => {
                             }
                         
                             const simpan_jawaban = await new Promise((resolve, reject) => {
-                                const query_simpanjawaban = Connection.query(sql_simpanjawaban, [value_simpanjawaban], (error) => {
+                                Connection.query(sql_simpanjawaban, [value_simpanjawaban], (error) => {
                                     if(error) { 
                                         reject(error);
                                     } else {
                                         resolve("true");
                                     }
                                 });
-                                console.log(query_simpanjawaban)
                             })
 
                             if (simpan_jawaban === "true") {
                                 /** simpan jawaban */
-                                console.log("Berhasil simpan")
                                 res.status(201).json({
                                     message: "Jawaban berhasil disimpan, silahkan melanjutkan",
                                     idacara
                                 });
                             } else {
                                 /** jawaban gagal disimpan */
-                                console.log("Gagal simpan")
                                 throw new Error('Jawaban gagal disimpan');
                             }
                         } else if(cek_jawaban.length > 0){
