@@ -35,7 +35,7 @@ app.use('/assessment', require('./routes/assessment'));
 app.use('/kesimpulan', require('./routes/kesimpulan'));
 app.use('/kesimpulanprodi', require('./routes/kesimpulanprodi'));
 
-let port = process.env.PORT || 8091;
+let port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Server running on port: ${port}`);
 });

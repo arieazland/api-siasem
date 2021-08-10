@@ -1056,7 +1056,24 @@ Router.post('/listpertanyaan2', async (req, res) =>{
                                 }
                             } else if(cek_part5.length > 0) {
                                 /** jika user sudah menjawab part 5 pada acara terpilih, kirim notif test selesai */
-                                res.status(201).json({ message: 'Assessment selesai, silahkan logout. Terima kasih' });
+                                const dataacara = await new Promise((resolve, reject) => {
+                                    Connection.query("SELECT * FROM t_acara WHERE status = 'aktif' AND CURDATE() BETWEEN start AND end ORDER BY id ASC", async (error, results) => {
+                                        if(error) { 
+                                            /** jika error */
+                                            reject(error);
+                                        } else {
+                                            /** jika results */
+                                            resolve(results);
+                                        }
+                                    })
+                                })
+                                if(dataacara.length >= 0){
+                                    /** kirim data */
+                                    res.status(201).json({ message: 'Assessment selesai, silahkan logout. Terima kasih', selectacara, dataacara });
+                                } else {
+                                    /** jika error lainnya */
+                                    throw new Error('Error, please contact developer');
+                                }
                             } else {
                                 /** jika error lainnya */
                                 throw new Error('Error, please contact developer');
