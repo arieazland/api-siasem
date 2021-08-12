@@ -25,28 +25,28 @@ exports.registrasiJawaban = async (req, res) => {
             /** jika belum ada dilakukan penyimpanan jawaban dan kirim notif jawaban berhasil di simpan */
 
             const cek_acara = await new Promise((resolve, reject) => {
-                Connection.query("SELECT id FROM t_acara WHERE id = ?", [idacara], (error) => {
+                Connection.query("SELECT id FROM t_acara WHERE id = ?", [idacara], (error, results) => {
                     if(error){
                         reject(error)
                     } else {
-                        resolve("true")
+                        resolve(results)
                     }
                 })
             })
 
-            if(cek_acara === "true"){
+            if(cek_acara.length > 0){
                 /** jika data acara terdaftar lakukan cek iduser */
                 const cek_user = await new Promise((resolve, reject) => {
-                    Connection.query("SELECT id FROM t_user WHERE id = ?", [iduser], (error) => {
+                    Connection.query("SELECT id FROM t_user WHERE id = ?", [iduser], (error, results) => {
                         if(error){
                             reject(error)
                         } else {
-                            resolve("true")
+                            resolve(results)
                         }
                     })
                 })
 
-                if(cek_user === "true"){
+                if(cek_user.length > 0){
                     /** jika data user terdaftar lakukan pengecekkan idsoal */
                     var sql_ceksoal = "SELECT id FROM t_soal WHERE id IN (?)";
                     var value_ceksoal = [];
@@ -131,77 +131,8 @@ exports.registrasiJawaban = async (req, res) => {
                 /** jika data acara tidak terdaftar */
                 throw new Error('Acara tidak terdaftar');
             }
-
-            /** cek pertanyaan V1 */
-            // for( var i = 0; i < idsoal.length; i++){
-            //     var cek_soal = await new Promise((resolve, reject) => {
-            //         Connection.query("SELECT id FROM t_soal WHERE id IN (?)", [idsoal[i]], (error, results)=>{
-            //             if(error) { 
-            //                 reject(error);
-            //             } else {
-            //                 resolve(results);
-            //             }
-            //         })
-            //     })
-            // }
-            
-            /** proses penyimpanan jawaban V1*/
-            // for( var i = 0; i < idsoal.length; i++){
-            //     var simpan_jawaban = await new Promise((resolve, reject) => {
-            //         Connection.query("INSERT INTO t_answer SET ?", [{id: null, iduser: iduser, idsoal: idsoal[i], jawab: radio[i], idacara: idacara, date_created: tanggal, time_created: waktu}], (error, results)=>{
-            //             if(error) { 
-            //                 reject(error);
-            //             } else {
-            //                 resolve("true");
-            //             }
-            //         })
-            //     })
-            // }
         } catch(e) {
             /** send error */
-            res.status(400).json({ message: e.message });
-        }
-    } else {
-        /** Field tidak boleh kosong */
-        res.status(403).json({
-            message: "Field tidak boleh kosong",
-        });
-    }
-}
-
-exports.registrasiJawabanV1 = async (req, res) => {
-    
-    const { idacara, iduser, idsoal, radio } = req.body;
-    var tanggal = Moment().format("YYYY-MM-DD");
-    var waktu = Moment().format("HH:mm:ss");
-    
-    if(idacara && iduser && idsoal && radio){
-        try{
-            var sql = "INSERT INTO t_answer (id, iduser, idsoal, jawab, idacara, date_created, time_created) VALUES ?";
-            var value = [];
-            for( var i = 0; i < idsoal.length; i++){
-                value.push([null, iduser, idsoal[i], radio[i], idacara, tanggal, waktu]);
-            }
-        
-            const simpan_jawaban = await new Promise((resolve, reject) => {
-                Connection.query(sql, [value], (error, results) => {
-                    if(error) { 
-                        reject(error);
-                    } else {
-                        resolve(results);
-                    }
-                });
-            })
-
-            if (simpan_jawaban) {
-                res.status(201).json({
-                    message: "Jawaban berhasil disimpan, silahkan melanjutkan",
-                    idacara
-                });
-            } else {
-                throw new Error('Jawaban gagal disimpan');
-            }
-        } catch(e) {
             res.status(400).json({ message: e.message });
         }
     } else {
