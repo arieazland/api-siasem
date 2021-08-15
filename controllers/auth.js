@@ -130,7 +130,7 @@ exports.regAdmin = (req, res) => {
 /** Peserta Event Register Process */
 exports.regMahasiswa = (req, res) => {
     try{
-        const { nim, nama, fakultas, prodi, password, password2 } = req.body;
+        const { nim, nama, email, fakultas, prodi, password, password2 } = req.body;
         var tanggal = Moment().format("YYYY-MM-DD");
         var waktu = Moment().format("HH:mm:ss");
         
@@ -156,7 +156,7 @@ exports.regMahasiswa = (req, res) => {
                     /** Username tersedia */
                     let hashedPassword = await Bcrypt.hash(password, 8);
 
-                    Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
+                    Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, uemail: email, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
                         (error, results) => {
                         if(error){
                             res.status(500).json({
