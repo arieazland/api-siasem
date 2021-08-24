@@ -12,54 +12,58 @@ Moment.locale('id');
 
 /** Login Process */
 exports.login = async (req, res) => {
-    try {
-        const { emailnim, password } = req.body;
-        var tanggal = Moment().format("YYYY-MM-DD");
-        var waktu = Moment().format("HH:mm:ss");
+    const { emailnim, password } = req.body;
+    var tanggal = Moment().format("YYYY-MM-DD");
+    var waktu = Moment().format("HH:mm:ss");
 
-        if(emailnim && password){
-            Connection.query('SELECT * FROM t_user WHERE uemail = ? OR unim = ?', [emailnim, emailnim], async (error, results) =>{
-                if(error){
-                    // throw error;
-                    res.status(500).json({
-                        message: error
-                    });
-                } else if(results.length == 0){
-                    /** email salah */
-                    res.status(401).json({
-                        message: 'Email atau NIM atau password anda salah'
-                    });
-                } else if(results.length > 0 && !(await Bcrypt.compare(password, results[0].upass))){
-                    /** password salah */
-                    res.status(403).json({
-                        message: 'Email atau NIM atau password anda salah'
-                    });
-                } else if (results.length > 0 && results[0].utipe == 'nonaktif'){
-                    /** user nonaktif */
-                    res.status(403).json({
-                        message: 'User anda sudah di nonaktifkan'
-                    });
-                } else if(results.length > 0 && await Bcrypt.compare(password, results[0].upass) && results[0].utipe != 'nonaktif') {
-                    /** login sukses */
-                    res.status(202).json({
-                        message: 'Login Berhasil',
-                        data: results
-                    });
-                } else {
-                    res.status(500).json({
-                        message: 'Error please contact developer!'
-                    });
-                }
-            });
-        } else {
-            /** username dan password kosong */
-            res.status(403).json({
-                message: 'Field tidak boleh kosong'
-            });
+    if(emailnim && password){
+        try{
+            /** get data user */
+            const cek_user = await new Promise((resolve, reject) => {
+                Connection.query("SELECT * FROM t_user WHERE uemail = ? OR unim = ?", [emailnim, emailnim], (error, results) => {
+                    if(error){
+                        reject(error)
+                    } else {
+                        resolve(results)
+                    }
+                })
+            })
+
+            if(cek_user.length === 0) {
+                /** cek apakah data user kosong */
+                /** email/nim salah */
+                res.status(401).json({
+                    message: 'Email atau NIM atau password anda salah'
+                });
+            } else if(cek_user.length > 0 && !(await Bcrypt.compare(password, cek_user[0].upass))){
+                /** password salah */
+                res.status(403).json({
+                    message: 'Email atau NIM atau password anda salah'
+                });
+            } else if (cek_user.length > 0 && cek_user[0].utipe == 'nonaktif'){
+                /** user nonaktif */
+                res.status(403).json({
+                    message: 'User anda sudah di nonaktifkan'
+                });
+            } else if(cek_user.length > 0 && await Bcrypt.compare(password, cek_user[0].upass) && cek_user[0].utipe != 'nonaktif') {
+                /** login sukses */
+                res.status(202).json({
+                    message: 'Login Berhasil',
+                    data: cek_user
+                });
+            } else {
+                res.status(500).json({
+                    message: 'Error please contact developer!'
+                });
+            }
+        } catch(e) {
+            /** send error */
+            res.status(400).json({ message: e.message });
         }
-    } catch (error) {
-        res.status(500).json({
-            message: error
+    } else {
+        /** username dan password kosong */
+        res.status(403).json({
+            message: 'Field tidak boleh kosong'
         });
     }
 };
