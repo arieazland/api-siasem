@@ -132,61 +132,73 @@ exports.regAdmin = (req, res) => {
 };
 
 /** Peserta Event Register Process */
-exports.regMahasiswa = (req, res) => {
-    try{
-        const { nim, nama, email, fakultas, prodi, password, password2 } = req.body;
-        var tanggal = Moment().format("YYYY-MM-DD");
-        var waktu = Moment().format("HH:mm:ss");
-        
-        if(nim && nama && fakultas && prodi && password && password2){
-            Connection.query('SELECT unim FROM t_user WHERE unim = ?', [nim], async (error, results) => {
-                if(error) { 
-                    // throw error;
-                    res.status(500).json({
-                        message: error
-                    });
-                } else if(results.length > 0){
-                    /** username sudah dipakai */
-                    res.status(403).json({
-                        message: "NIM sudah terdaftar, silahkan login atau cek kembali NIM anda",
-                    });
-                    
-                } else if( password !== password2) {
-                    /** password dan password konfirmasi tidak sama */
-                    res.status(403).json({
-                        message: "Password dan konfirmasi password tidak sama",
-                    });
-                } else if (results.length == 0){
-                    /** Username tersedia */
-                    let hashedPassword = await Bcrypt.hash(password, 8);
+exports.regMahasiswa = async (req, res) => {
+    const { nim, nama, email, fakultas, prodi, password, password2 } = req.body;
+    var tanggal = Moment().format("YYYY-MM-DD");
+    var waktu = Moment().format("HH:mm:ss");
+    
+    if(nim && nama && fakultas && prodi && email && password && password2){
+        try{
+            const cek_nim = await new Promise((resolve, reject) => {
+                Connection.query('SELECT unim FROM t_user WHERE unim = ?', [nim], async (error, results) => {
+                    if(error){
+                        reject(error)
+                    } else {
+                        resolve(results)
+                    }
+                })
+            })
+    
+            if(cek_nim.length > 0){
+                /** jika nim sudah terdaftar */
+                res.status(403).json({
+                    message: "NIM sudah terdaftar, silahkan login atau cek kembali NIM anda",
+                });
+            } else if( password !== password2) {
+                /** password dan password konfirmasi tidak sama */
+                res.status(403).json({
+                    message: "Password dan konfirmasi password tidak sama",
+                });
+            } else if(cek_nim.length === 0) {
+                /** nim blm terdaftar */
+                /** hash password */
+                let hashedPassword = await Bcrypt.hash(password, 8);
 
+                /** lakukan penyimpanan data user*/
+                const simpan_data = await new Promise((resolve, reject) => {
                     Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, uemail: email, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
-                        (error, results) => {
+                        (error) => {
                         if(error){
-                            res.status(500).json({
-                                message: error
-                            });
+                            reject(error)
                         } else {
-                            /** Registrasi berhasil dilanjutkan ke login */
-                            res.status(201).json({
-                                message: "User account berhasil di daftarkan, silahkan login",
-                            });
+                            resolve("true")
                         }
                     })
+                })
+
+                if(simpan_data === "true"){
+                    /** Registrasi berhasil dilanjutkan ke login */
+                    res.status(201).json({
+                        message: "User account berhasil di daftarkan, silahkan login",
+                    });
+                } else {
+                    /** Registrasi gagal */
+                    res.status(500).json({
+                        message: "Registrasi mahasiswa baru gagal!",
+                    });
                 }
-            })
-        } else {
-            /** Field tidak boleh kosong */
-            res.status(403).json({
-                message: "Field tidak boleh kosong",
-            });
+            }
+        } catch(e) {
+            /** send error */
+            res.status(400).json({ message: e.message });
         }
-    } catch (error) {
-        res.status(500).json({
-            message: error
+    } else {
+        /** Field tidak boleh kosong */
+        res.status(403).json({
+            message: "Field tidak boleh kosong",
         });
     }
-};
+}
 
 /** Psikolog Register Process */
 exports.regPsikolog = (req, res) => {
