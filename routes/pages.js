@@ -2467,7 +2467,64 @@ Router.post('/skorassessment', async (req, res) =>{
             }
 
         } catch(e) {
-            /** send error */
+            /** kirim error */
+            res.status(400).json({ message: e.message });
+        }
+    } else {
+        /** Kirim error */
+        res.status(400).json({
+            message: "Field tidak boleh kosong"
+        })
+    }
+})
+
+/** Route for get data grand prize tercepat entr jawaban*/
+Router.post('/gptercepat', async (req, res) => {
+    const {selectacara} = req.body;
+
+    if(selectacara){
+        try{
+            const get_gptercepat = await new Promise((resolve, reject) => {
+                Connection.query("SELECT u.unim AS nim, u.unama AS nama, u.ufakultas AS fakultas, u.uprodi AS prodi, MIN(a.date_created) AS tanggal, MIN(a.time_created) AS jam FROM t_user u, t_answer a WHERE a.idacara = ? AND a.iduser IN (SELECT iduser FROM t_answer WHERE idsoal BETWEEN 1 AND 15 ) AND a.iduser IN (SELECT iduser FROM t_answer WHERE idsoal BETWEEN 16 AND 35 ) AND a.iduser IN (SELECT iduser FROM t_answer WHERE idsoal BETWEEN 36 AND 49 ) AND a.iduser IN (SELECT iduser FROM t_answer WHERE idsoal BETWEEN 50 AND 69 ) AND a.iduser IN (SELECT iduser FROM t_answer WHERE idsoal BETWEEN 70 AND 105 ) AND a.iduser = u.id GROUP BY u.uprodi ORDER BY u.ufakultas", [selectacara], (error, results) => {
+                    if(error){
+                        reject(error)
+                    } else {
+                        resolve(results)
+                    }
+                })
+            })
+
+            if(get_gptercepat.length >= 0){
+                /** get data acara */
+                const dataacara = await new Promise((resolve, error) => {
+                    Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' ORDER BY id ASC", (error, results) =>{
+                        if(error){
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                })
+                
+                if(dataacara.length >= 0){
+                    /** kirim data */
+                    res.status(200).json({
+                        selectacara, get_gptercepat, dataacara
+                    })
+                } else {
+                    /** Kirim error */
+                    res.status(400).json({
+                        message: "Get data acara error"
+                    })
+                }
+            } else {
+                /** Kirim error */
+                res.status(400).json({
+                    message: "Get data grand prize error"
+                })
+            }            
+        } catch (e) {
+            /** kirim error */
             res.status(400).json({ message: e.message });
         }
     } else {
