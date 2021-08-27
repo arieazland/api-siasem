@@ -148,8 +148,12 @@ exports.regMahasiswa = async (req, res) => {
                     }
                 })
             })
-    
-            if(cek_nim.length > 0){
+            if( prodi.includes("S2") || prodi.includes("MAGISTER") || prodi.includes("s2") || prodi.includes("Magister") || prodi.includes("magister") ) {
+                /** Prodi S2 tidak diperkenankan */
+                res.status(403).json({
+                    message: "Jenjang pendidikan anda adalah S2, untuk saat ini SAPA diperuntukkan bagi mahasiswa jenjang pendidikan S1 dan D3",
+                });
+            } else if( cek_nim.length > 0 ){
                 /** jika nim sudah terdaftar */
                 res.status(403).json({
                     message: "NIM sudah terdaftar, silahkan login atau cek kembali NIM anda",
@@ -159,7 +163,7 @@ exports.regMahasiswa = async (req, res) => {
                 res.status(403).json({
                     message: "Password dan konfirmasi password tidak sama",
                 });
-            } else if(cek_nim.length === 0) {
+            } else if( cek_nim.length === 0 ) {
                 /** nim blm terdaftar */
                 /** hash password */
                 let hashedPassword = await Bcrypt.hash(password, 8);
