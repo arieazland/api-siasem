@@ -2768,6 +2768,83 @@ Router.post('/gptercepat', async (req, res) => {
     }
 })
 
+/** Rekap per fakultas */
+Router.post('/rekapperfakultas', async (req, res) => {
+    const {selectacara} = req.body;
+
+    if(selectacara) {
+        try{
+            const cekacara = await new Promise((resolve, reject) => {
+                Connection.query("SELECT id FROM t_acara WHERE id = ? AND NOT status = 'hapus' ", [selectacara], (error, results) => {
+                    if(error){
+                        reject(error)
+                    } else {
+                        resolve(results)
+                    }
+                })
+            })
+
+            if(cekacara.length > 0) {
+                const get_rekapperfakultas = await new Promise((resolve, reject) => {
+                    Connection.query("SELECT u.ufakultas AS fakultas, COUNT(DISTINCT a.iduser) AS jumlah_mahasiswa_entry FROM t_user u, t_answer a WHERE a.iduser = u.id AND a.idacara = ? GROUP BY u.ufakultas", [selectacara], (error, results) => {
+                        if(error){
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                })
+    
+                if(get_rekapperfakultas.length >= 0){
+                    /** get data acara */
+                    const dataacara = await new Promise((resolve, error) => {
+                        Connection.query("SELECT * FROM t_acara WHERE NOT status = 'hapus' ORDER BY id ASC", (error, results) =>{
+                            if(error){
+                                reject(error)
+                            } else {
+                                resolve(results)
+                            }
+                        })
+                    })
+                    
+                    if(dataacara.length >= 0){
+                        /** kirim data */
+                        res.status(200).json({
+                            selectacara, get_rekapperfakultas, dataacara
+                        })
+                    } else {
+                        /** Kirim error */
+                        res.status(400).json({
+                            message: "Get data acara error"
+                        })
+                    }
+                } else {
+                    /** Kirim error */
+                    res.status(400).json({
+                        message: "Get data rekap jumlah mahasiswa entry jawaban per fakultas error"
+                    })
+                }
+            } else if(cekacara.length === 0) {
+                res.status(400).json({
+                    message: "Acara tidak terdaftar"
+                })
+            } else {
+                res.status(400).json({
+                    message: "Cek data acara error"
+                })
+            }         
+        } catch (e) {
+            /** kirim error */
+            res.status(400).json({ message: e.message });
+        }
+    } else {
+        /** Kirim error */
+        res.status(400).json({
+            message: "Field tidak boleh kosong"
+        })
+    }
+})
+
 /** Route for lupa password */
 Router.post('/lupapassword', (req, res) =>{
     try{
