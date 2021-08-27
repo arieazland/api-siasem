@@ -148,10 +148,10 @@ exports.regMahasiswa = async (req, res) => {
                     }
                 })
             })
-            if( prodi.includes("S2") || prodi.includes("MAGISTER") || prodi.includes("s2") || prodi.includes("Magister") || prodi.includes("magister") ) {
+            if( prodi.includes("S2") || prodi.includes("MAGISTER") || prodi.includes("s2") || prodi.includes("Magister") || prodi.includes("magister") || prodi.includes("S3") || prodi.includes("s3") ) {
                 /** Prodi S2 tidak diperkenankan */
                 res.status(403).json({
-                    message: "Jenjang pendidikan anda adalah S2, untuk saat ini SAPA diperuntukkan bagi mahasiswa jenjang pendidikan S1 dan D3",
+                    message: "Jenjang pendidikan anda diatas S1, untuk saat ini SAPA diperuntukkan bagi mahasiswa jenjang pendidikan S1 dan D3",
                 });
             } else if( cek_nim.length > 0 ){
                 /** jika nim sudah terdaftar */
