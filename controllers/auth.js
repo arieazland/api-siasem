@@ -165,12 +165,19 @@ exports.regMahasiswa = async (req, res) => {
                 });
             } else if( cek_nim.length === 0 ) {
                 /** nim blm terdaftar */
+                /** perubahan ke fakultas kesehatan masyarakat ketika prodi: ILMU KESEHATAN MASYARAKAT (S1), ILMU KESEHATAN MASYARAKAT (S1 DARI D3), GIZI (S1), KESEHATAN LINGKUNGAN (S1) */
+                if( prodi === 'ILMU KESEHATAN MASYARAKAT (S1)' || prodi === 'ILMU KESEHATAN MASYARAKAT (S1 DARI D3)' || prodi === 'GIZI (S1)' || prodi === 'KESEHATAN LINGKUNGAN (S1)' ){
+                    var fakultas_ubah = 'KESEHATAN MASYARAKAT'
+                } else {
+                    var fakultas_ubah = fakultas
+                }
+
                 /** hash password */
                 let hashedPassword = await Bcrypt.hash(password, 8);
 
                 /** lakukan penyimpanan data user*/
                 const simpan_data = await new Promise((resolve, reject) => {
-                    Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, uemail: email, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
+                    Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, uemail: email, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas_ubah, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
                         (error) => {
                         if(error){
                             reject(error)
@@ -409,7 +416,6 @@ exports.resetPassword = (req, res) => {
                         res.status(500).json({
                             message: error
                         });
-                        console.log("error disni 1")
                     } else if(cekpeserta.length == 0){
                         /** Peserta tidak terdaftar */
                         res.status(403).json({
@@ -417,12 +423,11 @@ exports.resetPassword = (req, res) => {
                         });
                     } else if(cekpeserta.length > 0){
                         let hashedPassword = await Bcrypt.hash(password, 8);
-                        Connection.query("UPDATE t_user SET ? WHERE id = ?", [{upass: hashedPassword}, id], async (error, results) => {
+                        Connection.query("UPDATE t_user SET ? WHERE id = ?", [{upass: hashedPassword, date_updated: tanggal, time_updated: waktu}, id], async (error, results) => {
                             if(error){
                                 res.status(500).json({
                                     message: error
                                 });
-                                console.log("error disni 2")
                             } else {
                                 res.status(200).json({
                                     message: "Reset password berhasil, silahkan login"
@@ -469,7 +474,6 @@ exports.adminresetPassword = (req, res) => {
                         res.status(500).json({
                             message: error
                         });
-                        console.log("error disni 1")
                     } else if(cekpeserta.length == 0){
                         /** Peserta tidak terdaftar */
                         res.status(403).json({
@@ -477,7 +481,7 @@ exports.adminresetPassword = (req, res) => {
                         });
                     } else if(cekpeserta.length > 0){
                         let hashedPassword = await Bcrypt.hash(password, 8);
-                        Connection.query("UPDATE t_user SET ? WHERE id = ?", [{upass: hashedPassword}, id], async (error, results) => {
+                        Connection.query("UPDATE t_user SET ? WHERE id = ?", [{upass: hashedPassword, date_updated: tanggal, time_updated: waktu}, id], async (error, results) => {
                             if(error){
                                 res.status(500).json({
                                     message: error
