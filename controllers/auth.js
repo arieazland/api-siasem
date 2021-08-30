@@ -166,18 +166,18 @@ exports.regMahasiswa = async (req, res) => {
             } else if( cek_nim.length === 0 ) {
                 /** nim blm terdaftar */
                 /** perubahan ke fakultas kesehatan masyarakat jika prodi: ILMU KESEHATAN MASYARAKAT (S1), ILMU KESEHATAN MASYARAKAT (S1 DARI D3), GIZI (S1), KESEHATAN LINGKUNGAN (S1) */
-                if( prodi === 'ILMU KESEHATAN MASYARAKAT (S1)' || prodi === 'ILMU KESEHATAN MASYARAKAT (S1 DARI D3)' || prodi === 'GIZI (S1)' || prodi === 'KESEHATAN LINGKUNGAN (S1)' ){
-                    var fakultas_ubah = 'KESEHATAN MASYARAKAT'
-                } else {
-                    var fakultas_ubah = fakultas
-                }
+                // if( prodi === 'ILMU KESEHATAN MASYARAKAT (S1)' || prodi === 'ILMU KESEHATAN MASYARAKAT (S1 DARI D3)' || prodi === 'GIZI (S1)' || prodi === 'KESEHATAN LINGKUNGAN (S1)' ){
+                //     var fakultas_ubah = 'KESEHATAN MASYARAKAT'
+                // } else {
+                //     var fakultas_ubah = fakultas
+                // }
 
                 /** hash password */
                 let hashedPassword = await Bcrypt.hash(password, 8);
 
                 /** lakukan penyimpanan data user*/
                 const simpan_data = await new Promise((resolve, reject) => {
-                    Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, uemail: email, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas_ubah, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
+                    Connection.query('INSERT INTO t_user SET ?', {id: null, unim: nim, unama: nama, uemail: email, upass: hashedPassword, utipe: "mahasiswa", ufakultas: fakultas, uprodi: prodi, date_created: tanggal, time_created: waktu}, 
                         (error) => {
                         if(error){
                             reject(error)
