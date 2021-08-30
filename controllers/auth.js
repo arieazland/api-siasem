@@ -27,6 +27,7 @@ exports.login = async (req, res) => {
                         resolve(results)
                     }
                 })
+                Connection.end();
             })
 
             if(cek_user.length === 0) {
