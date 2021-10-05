@@ -3000,7 +3000,7 @@ Router.post('/rekapskor', async (req, res) => {
                                     res.status(201).json({
                                         getacara, getpart, rekappart, selectacara, selectpart
                                     });
-                                } else if(rekappart.length == 0){
+                                } else if(rekappart.length === 0){
                                     throw new Error('Data Rekap Rata-rata Skoring per Prodi Part 5 Kosong');
                                 } else {
                                     throw new Error('Get Rekap Rata-rata Skoring per Prodi Part 5 Gagal');
