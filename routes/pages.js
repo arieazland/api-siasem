@@ -2845,6 +2845,202 @@ Router.post('/rekapperfakultas', async (req, res) => {
     }
 })
 
+/** Route for rekap skor per prodi */
+Router.post('/rekapskor', async (req, res) => {
+    const {selectacara, selectpart} = req.body;
+
+    if(selectacara && selectpart){
+        try{
+
+            /** cek acara */
+            const cek_acara = await new Promise((resolve, reject) => {
+                Connection.query("SELECT id FROM t_acara WHERE id = ? ", [selectacara], (error, results) => {
+                    if(error){
+                        reject(error)
+                    } else {
+                        resolve(results)
+                    }
+                })
+            })
+            if(cek_acara.length > 0){
+                /** cek part */
+                const cek_part = await new Promise((resolve, reject) => {
+                    Connection.query("SELECT id FROM t_part WHERE id = ? ", [selectpart], (error, results) => {
+                        if(error){
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                })
+                if(cek_part.length > 0){
+                    /** get data acara */
+                    const getacara = await new Promise((resolve, reject) => {
+                        Connection.query("SELECT t_acara.id AS idacara, t_acara.nama AS namaacara FROM t_acara WHERE status = 'aktif' ORDER BY id ASC", (error, results) => {
+                            if(error){
+                                reject(error)
+                            } else {
+                                resolve(results)
+                            }
+                        })
+                    })
+
+                    if(getacara.length >= 0) {
+                        /** get data part */
+                        const getpart = await new Promise((resolve, reject) => {
+                            Connection.query("SELECT id, nama FROM t_part WHERE status = 'aktif' ", (error, results) => {
+                                if(error){
+                                    reject(error)
+                                } else {
+                                    resolve(results)
+                                }
+                            })
+                        })
+
+                        if(getpart.length >= 0){
+                            var partnumber = cek_part[0].id;
+                            /** part terdaftar */
+                            if(partnumber == '1'){
+                                /** get rekap rata2 part 1*/
+                                const rekappart = await new Promise((resolve, reject) => {
+                                    Connection.query("SELECT u.ufakultas AS fakultas, u.uprodi AS prodi, SUM(IF(a.idsoal < 16, jawab, 0)) AS Jumlah, COUNT(DISTINCT iduser) AS jumlah_mahasiswa_entry, FORMAT(SUM(IF(a.idsoal < 16, jawab, 0)) / COUNT(DISTINCT a.iduser),2) AS rata2 FROM t_user u, t_answer a WHERE a.iduser = u.id  AND  a.idacara = ? AND  a.idsoal < 16 GROUP BY u.uprodi ORDER BY u.ufakultas ", [selectacara], (error, results) => {
+                                        if(error){
+                                            reject(error)
+                                        } else {
+                                            resolve(results)
+                                        }
+                                    })
+                                })
+                                if(rekappart.length > 0){
+                                    /** send data */
+                                    res.status(201).json({
+                                        getacara, getpart, rekappart, selectacara, selectpart
+                                    });
+                                } else if(rekappart.length === 0){
+                                    throw new Error('Data Rekap Rata-rata Skoring per Prodi Part 1 Kosong');
+                                } else {
+                                    throw new Error('Get Rekap Rata-rata Skoring per Prodi Part 1 Gagal');
+                                }
+
+                            } else if(partnumber == '2'){
+                                const rekappart = await new Promise((resolve, reject) => {
+                                    Connection.query("SELECT u.ufakultas AS fakultas, u.uprodi AS prodi, COUNT(DISTINCT a.iduser) AS jumlah_mahasiswa_entry, SUM(IF(idsoal < 36 AND idsoal > 15, jawab, 0)) AS Jumlah, COUNT(DISTINCT iduser) AS jumlahuser, FORMAT(SUM(IF(idsoal < 36 AND idsoal > 15, jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2 FROM t_user u, t_answer a WHERE a.iduser = u.id  AND  a.idacara = ? AND  a.idsoal < 36 AND idsoal > 15 GROUP BY u.uprodi ORDER BY u.ufakultas", [selectacara], (error, results) => {
+                                        if(error){
+                                            reject(error)
+                                        } else {
+                                            resolve(results)
+                                        }
+                                    })
+                                })
+                                if(rekappart.length > 0){
+                                    /** send data */
+                                    res.status(201).json({
+                                        getacara, getpart, rekappart, selectacara, selectpart
+                                    });
+                                } else if(rekappart.length === 0){
+                                    throw new Error('Data Rekap Rata-rata Skoring per Prodi Part 2 Kosong');
+                                } else {
+                                    throw new Error('Get Rekap Rata-rata Skoring per Prodi Part 2 Gagal');
+                                }
+
+                            } else if(partnumber == '3'){
+                                const rekappart = await new Promise((resolve, reject) => {
+                                    Connection.query("SELECT u.ufakultas AS fakultas, u.uprodi AS prodi, COUNT(DISTINCT a.iduser) AS jumlah_mahasiswa_entry, SUM(IF(idsoal < 50 AND idsoal > 35, jawab, 0)) AS Jumlah, COUNT(DISTINCT iduser) AS jumlahuser, FORMAT(SUM(IF(idsoal < 50 AND idsoal > 35, jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2 FROM t_user u, t_answer a WHERE a.iduser = u.id  AND  a.idacara = ? AND  a.idsoal < 50 AND idsoal > 35 GROUP BY u.uprodi ORDER BY u.ufakultas", [selectacara], (error, results) => {
+                                        if(error){
+                                            reject(error)
+                                        } else {
+                                            resolve(results)
+                                        }
+                                    })
+                                })
+                                if(rekappart.length > 0){
+                                    /** send data */
+                                    res.status(201).json({
+                                        getacara, getpart, rekappart, selectacara, selectpart
+                                    });
+                                } else if(rekappart.length === 0){
+                                    throw new Error('Data Rekap Rata-rata Skoring per Prodi Part 3 Kosong');
+                                } else {
+                                    throw new Error('Get Rekap Rata-rata Skoring per Prodi Part 3 Gagal');
+                                }
+
+                            } else if(partnumber == '4'){
+                                const rekappart = await new Promise((resolve, reject) => {
+                                    Connection.query("SELECT u.ufakultas AS fakultas, u.uprodi AS prodi, COUNT(DISTINCT a.iduser) AS jumlah_mahasiswa_entry, SUM(IF(idsoal < 70 AND idsoal > 49, jawab, 0)) AS Jumlah, COUNT(DISTINCT iduser) AS jumlahuser, FORMAT(SUM(IF(idsoal < 70 AND idsoal > 49, jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2 FROM t_user u, t_answer a WHERE a.iduser = u.id  AND  a.idacara = ? AND  a.idsoal < 70 AND idsoal > 49 GROUP BY u.uprodi ORDER BY u.ufakultas", [selectacara], (error, results) => {
+                                        if(error){
+                                            reject(error)
+                                        } else {
+                                            resolve(results)
+                                        }
+                                    })
+                                })
+                                if(rekappart.length > 0){
+                                    /** send data */
+                                    res.status(201).json({
+                                        getacara, getpart, rekappart, selectacara, selectpart
+                                    });
+                                } else if(rekappart.length === 0){
+                                    throw new Error('Data Rekap Rata-rata Skoring per Prodi Part 4 Kosong');
+                                } else {
+                                    throw new Error('Get Rekap Rata-rata Skoring per Prodi Part 4 Gagal');
+                                }
+
+                            } else if(partnumber == '5'){
+                                const rekappart = await new Promise((resolve, reject) => {
+                                    Connection.query("SELECT u.ufakultas AS fakultas, u.uprodi AS prodi, COUNT(DISTINCT a.iduser) AS jumlah_mahasiswa_entry, SUM(IF(idsoal > 69, jawab, 0)) AS Jumlah, FORMAT(SUM(IF(idsoal > 69, jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2, sum(IF(idsoal IN ('70','78','83','88','92','96','100'), jawab, 0)) AS jumlahE, FORMAT(SUM(IF(idsoal IN ('70','78','83','88','92','96','100'), jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2E, sum(IF(idsoal IN ('71','79','84','89','97','103'), jawab, 0)) AS jumlahA, FORMAT(SUM(IF(idsoal IN ('71','79','84','89','97','103'), jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2A, sum(IF(idsoal IN ('72','75','80','85','90','93','98','101','104'), jawab, 0)) AS jumlahC, FORMAT(SUM(IF(idsoal IN ('72','75','80','85','90','93','98','101','104'), jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2C, sum(IF(idsoal IN ('73','76','81','86','94','99','102'), jawab, 0)) AS jumlahN, FORMAT(SUM(IF(idsoal IN ('73','76','81','86','94','99','102'), jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2N, sum(IF(idsoal IN ('74','77','82','87','91','95','105'), jawab, 0)) AS jumlahO, FORMAT(SUM(IF(idsoal IN ('74','77','82','87','91','95','105'), jawab, 0)) / COUNT(DISTINCT iduser),2) AS rata2O FROM t_user u, t_answer a WHERE a.iduser = u.id AND a.idacara = 10 AND a.idsoal > 69 GROUP BY u.uprodi ORDER BY u.ufakultas", [selectacara], (error, results) => {
+                                        if(error){
+                                            reject(error)
+                                        } else {
+                                            resolve(results)
+                                        }
+                                    })
+                                })
+                                if(rekappart.length > 0){
+                                    /** send data */
+                                    res.status(201).json({
+                                        getacara, getpart, rekappart, selectacara, selectpart
+                                    });
+                                } else if(rekappart.length === 0){
+                                    throw new Error('Data Rekap Rata-rata Skoring per Prodi Part 5 Kosong');
+                                } else {
+                                    throw new Error('Get Rekap Rata-rata Skoring per Prodi Part 5 Gagal');
+                                }
+
+                            } else {
+                                throw new Error('Get Rekap Rata-rata Skoring per Prodi Gagal');
+                            }
+                        } else {
+                            throw new Error('Error get data part');
+                        }
+                    } else {
+                        /** send error */
+                        throw new Error('Error get data acara');
+                    }
+                } else if(cek_part.length === 0){
+                    throw new Error('Part Tidak Terdaftar');
+                } else {
+                    throw new Error('Cek Data Part Error');
+                }
+
+            } else if (cek_acara.length === 0) {
+                throw new Error('Acara Tidak Terdaftar');
+            } else {
+                throw new Error('Cek Data Acara Error');
+            }
+
+        } catch(e) {
+            /** kirim error */
+            res.status(400).json({ message: e.message });
+        }
+    } else {
+        /** field kosong */
+        res.status(403).json({
+            message: 'Field tidak boleh kosong'
+        })
+    }
+    
+})
+
 /** Route for lupa password */
 Router.post('/lupapassword', (req, res) =>{
     try{
